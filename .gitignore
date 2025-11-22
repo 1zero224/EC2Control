@@ -39,3 +39,16 @@ Thumbs.db
 
 # Logs
 *.log
+
+# PyInstaller
+*.spec
+build/
+dist/
+*.manifest
+*.exe
+*.app
+
+# Application specific
+icon.ico
+icon.icns
+version_info.txt

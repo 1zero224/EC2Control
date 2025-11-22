@@ -5,6 +5,7 @@ AWS EC2 实例管理 GUI 应用
 import flet as ft
 from flet import Icons
 from ec2_service import EC2Service
+from screen_utils import get_screen_resolution
 import asyncio
 from datetime import datetime
 from typing import List, Dict
@@ -13,6 +14,79 @@ from typing import List, Dict
 # 定义全局字体样式
 FONT_FAMILY = "Microsoft YaHei"
 MONO_FONT = "Consolas"
+
+
+class FontScale:
+    """字体缩放系统 - 根据屏幕分辨率自适应"""
+
+    def __init__(self, page: ft.Page):
+        # 获取真实屏幕分辨率
+        self.screen_width, self.screen_height = get_screen_resolution()
+        # 计算基于分辨率的缩放因子（基准：1920x1080）
+        width_scale = self.screen_width / 1920
+        height_scale = self.screen_height / 1080
+        resolution_scale = min(width_scale, height_scale)
+
+        # 高分辨率屏幕（2K/4K）额外放大字体
+        if self.screen_width >= 2560:
+            self.scale = 1.15
+        elif self.screen_width >= 1920:
+            self.scale = 1.05
+        else:
+            self.scale = 1.0
+
+    def size(self, base_size: int) -> int:
+        """计算缩放后的字体大小"""
+        return int(base_size * self.scale)
+
+    # 预定义字体大小
+    @property
+    def title(self) -> int:
+        return self.size(26)
+
+    @property
+    def heading(self) -> int:
+        return self.size(18)
+
+    @property
+    def body(self) -> int:
+        return self.size(14)
+
+    @property
+    def small(self) -> int:
+        return self.size(12)
+
+    @property
+    def tiny(self) -> int:
+        return self.size(11)
+
+    @property
+    def console(self) -> int:
+        return self.size(11)
+
+    @property
+    def table_header(self) -> int:
+        return self.size(13)
+
+    @property
+    def table_cell(self) -> int:
+        return self.size(12)
+
+    @property
+    def button(self) -> int:
+        return self.size(14)
+
+    @property
+    def dropdown(self) -> int:
+        return self.size(14)
+
+    @property
+    def icon_small(self) -> int:
+        return self.size(16)
+
+    @property
+    def icon_medium(self) -> int:
+        return self.size(20)
 
 
 class EC2ManagerApp:
@@ -33,6 +107,9 @@ class EC2ManagerApp:
             "Consolas": MONO_FONT,
         }
 
+        # 初始化字体缩放系统
+        self.font = FontScale(self.page)
+
         self.ec2_service = None
         self.instances_table = None
         self.console_output = None
@@ -40,10 +117,10 @@ class EC2ManagerApp:
         self.refresh_button = None
 
         # 数据存储
-        self.all_instances = []  # 所有区域的实例
-        self.filtered_instances = []  # 筛选后的实例
-        self.auto_refresh_task = None  # 自动刷新任务
-        self.is_loading = False  # 是否正在加载
+        self.all_instances = []
+        self.filtered_instances = []
+        self.auto_refresh_task = None
+        self.is_loading = False
 
         self.setup_ui()
 
@@ -52,7 +129,7 @@ class EC2ManagerApp:
         # 标题
         title = ft.Text(
             "AWS EC2 实例管理器",
-            size=22,
+            size=self.font.title,
             weight=ft.FontWeight.W_600,
             font_family="YaHei",
         )
@@ -60,30 +137,42 @@ class EC2ManagerApp:
         # 区域筛选下拉框
         self.region_filter = ft.Dropdown(
             label="区域筛选",
-            width=200,
-            text_size=13,
+            width=220,
+            text_size=self.font.dropdown,
             options=[ft.dropdown.Option("all", "全部区域")],
             value="all",
             on_change=self.on_region_filter_changed,
-            text_style=ft.TextStyle(font_family="YaHei", size=13, weight=ft.FontWeight.W_400),
-            label_style=ft.TextStyle(font_family="YaHei", size=12),
+            text_style=ft.TextStyle(
+                font_family="YaHei",
+                size=self.font.dropdown,
+                weight=ft.FontWeight.W_400
+            ),
+            label_style=ft.TextStyle(
+                font_family="YaHei",
+                size=self.font.small
+            ),
         )
 
         # 刷新按钮
         self.refresh_button = ft.Container(
             content=ft.Row(
                 [
-                    ft.Icon(Icons.REFRESH, size=16, color=ft.Colors.WHITE),
-                    ft.Text("刷新实例列表", size=13, font_family="YaHei",
-                           weight=ft.FontWeight.W_400, color=ft.Colors.WHITE),
+                    ft.Icon(Icons.REFRESH, size=self.font.icon_small, color=ft.Colors.WHITE),
+                    ft.Text(
+                        "刷新实例列表",
+                        size=self.font.button,
+                        font_family="YaHei",
+                        weight=ft.FontWeight.W_400,
+                        color=ft.Colors.WHITE
+                    ),
                 ],
-                spacing=6,
+                spacing=8,
                 tight=True,
             ),
             on_click=self.manual_refresh,
             bgcolor=ft.Colors.BLUE_700,
             border_radius=6,
-            padding=ft.Padding(14, 10, 14, 10),
+            padding=ft.Padding(16, 12, 16, 12),
             ink=True,
         )
 
@@ -92,7 +181,7 @@ class EC2ManagerApp:
             label="自动刷新 (30秒)",
             value=True,
             on_change=self.toggle_auto_refresh,
-            label_style=ft.TextStyle(font_family="YaHei", size=12),
+            label_style=ft.TextStyle(font_family="YaHei", size=self.font.small),
         )
 
         # 顶部工具栏
@@ -111,20 +200,20 @@ class EC2ManagerApp:
         # 实例表格
         self.instances_table = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("区域", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("实例名称", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("实例 ID", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("状态", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("类型", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("公网 IP", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("私有 IP", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
-                ft.DataColumn(ft.Text("操作", size=12, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("区域", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("实例名称", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("实例 ID", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("状态", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("类型", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("公网 IP", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("私有 IP", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
+                ft.DataColumn(ft.Text("操作", size=self.font.table_header, weight=ft.FontWeight.W_600, font_family="YaHei")),
             ],
             rows=[],
             border_radius=8,
-            data_row_max_height=52,
-            heading_row_height=44,
-            column_spacing=20,
+            data_row_max_height=int(60 * self.font.scale),
+            heading_row_height=int(50 * self.font.scale),
+            column_spacing=int(24 * self.font.scale),
         )
 
         # 表格容器
@@ -140,31 +229,37 @@ class EC2ManagerApp:
 
         # 控制台输出
         self.console_output = ft.ListView(
-            spacing=1,
-            padding=8,
+            spacing=2,
+            padding=10,
             auto_scroll=True,
         )
 
+        console_height = int(130 * self.font.scale)
         console_container = ft.Container(
             content=self.console_output,
             bgcolor=ft.Colors.with_opacity(0.95, ft.Colors.BLACK),
             border_radius=6,
             padding=0,
-            height=110,
+            height=console_height,
             border=ft.border.all(1, ft.Colors.with_opacity(0.2, ft.Colors.WHITE)),
         )
 
         console_header = ft.Container(
             content=ft.Row(
                 [
-                    ft.Icon(Icons.TERMINAL, size=13, color=ft.Colors.GREEN_400),
-                    ft.Text("控制台输出", size=11, weight=ft.FontWeight.W_500,
-                           color=ft.Colors.WHITE70, font_family="YaHei"),
+                    ft.Icon(Icons.TERMINAL, size=self.font.icon_small, color=ft.Colors.GREEN_400),
+                    ft.Text(
+                        "控制台输出",
+                        size=self.font.small,
+                        weight=ft.FontWeight.W_500,
+                        color=ft.Colors.WHITE70,
+                        font_family="YaHei"
+                    ),
                 ],
-                spacing=6,
+                spacing=8,
             ),
             bgcolor=ft.Colors.with_opacity(0.85, ft.Colors.BLACK),
-            padding=ft.Padding(10, 6, 10, 6),
+            padding=ft.Padding(12, 8, 12, 8),
             border_radius=ft.border_radius.only(top_left=6, top_right=6),
         )
 
@@ -178,7 +273,7 @@ class EC2ManagerApp:
                 table_container,
                 console_section,
             ],
-            spacing=14,
+            spacing=16,
             expand=True,
         )
 
@@ -205,11 +300,21 @@ class EC2ManagerApp:
 
         log_entry = ft.Row(
             [
-                ft.Text(f"[{timestamp}]", size=10, color=ft.Colors.WHITE54, font_family="Consolas"),
-                ft.Text(prefix, size=10, color=color),
-                ft.Text(message, size=10, color=color, font_family="Consolas"),
+                ft.Text(
+                    f"[{timestamp}]",
+                    size=self.font.console,
+                    color=ft.Colors.WHITE54,
+                    font_family="Consolas"
+                ),
+                ft.Text(prefix, size=self.font.console, color=color),
+                ft.Text(
+                    message,
+                    size=self.font.console,
+                    color=color,
+                    font_family="Consolas"
+                ),
             ],
-            spacing=6,
+            spacing=8,
         )
 
         self.console_output.controls.append(log_entry)
@@ -223,6 +328,11 @@ class EC2ManagerApp:
         try:
             self.ec2_service = EC2Service()
             self.log_message(f"已连接 AWS，默认区域: {self.ec2_service.default_region}", "success")
+            self.log_message(
+                f"屏幕: {self.font.screen_width}x{self.font.screen_height} | "
+                f"字体缩放: {self.font.scale:.2f}x",
+                "info"
+            )
 
             # 加载所有区域的实例
             await self.load_all_regions()
@@ -246,7 +356,6 @@ class EC2ManagerApp:
             self.log_message(f"正在扫描 {region} ({current}/{total})", "info")
 
         try:
-            # 在后台线程中执行
             instances = await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: self.ec2_service.list_all_instances(progress_callback)
@@ -311,13 +420,43 @@ class EC2ManagerApp:
 
             row = ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(instance['region'], size=11, weight=ft.FontWeight.W_400, font_family="Consolas")),
-                    ft.DataCell(ft.Text(instance['name'], size=11, weight=ft.FontWeight.W_500, font_family="YaHei")),
-                    ft.DataCell(ft.Text(instance['id'], size=11, weight=ft.FontWeight.W_400, font_family="Consolas")),
+                    ft.DataCell(ft.Text(
+                        instance['region'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_400,
+                        font_family="Consolas"
+                    )),
+                    ft.DataCell(ft.Text(
+                        instance['name'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_500,
+                        font_family="YaHei"
+                    )),
+                    ft.DataCell(ft.Text(
+                        instance['id'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_400,
+                        font_family="Consolas"
+                    )),
                     ft.DataCell(state_badge),
-                    ft.DataCell(ft.Text(instance['type'], size=11, weight=ft.FontWeight.W_400, font_family="YaHei")),
-                    ft.DataCell(ft.Text(instance['public_ip'], size=11, weight=ft.FontWeight.W_400, font_family="Consolas")),
-                    ft.DataCell(ft.Text(instance['private_ip'], size=11, weight=ft.FontWeight.W_400, font_family="Consolas")),
+                    ft.DataCell(ft.Text(
+                        instance['type'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_400,
+                        font_family="YaHei"
+                    )),
+                    ft.DataCell(ft.Text(
+                        instance['public_ip'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_400,
+                        font_family="Consolas"
+                    )),
+                    ft.DataCell(ft.Text(
+                        instance['private_ip'],
+                        size=self.font.table_cell,
+                        weight=ft.FontWeight.W_400,
+                        font_family="Consolas"
+                    )),
                     ft.DataCell(action_button),
                 ]
             )
@@ -338,10 +477,20 @@ class EC2ManagerApp:
         style = style_map.get(state, {"bg": ft.Colors.GREY_700, "text": ft.Colors.GREY_300, "label": state})
 
         return ft.Container(
-            content=ft.Text(style["label"], size=10, weight=ft.FontWeight.W_600,
-                          color=style["text"], font_family="YaHei"),
+            content=ft.Text(
+                style["label"],
+                size=self.font.tiny,
+                weight=ft.FontWeight.W_600,
+                color=style["text"],
+                font_family="YaHei"
+            ),
             bgcolor=style["bg"],
-            padding=ft.Padding(8, 3, 8, 3),
+            padding=ft.Padding(
+                int(10 * self.font.scale),
+                int(4 * self.font.scale),
+                int(10 * self.font.scale),
+                int(4 * self.font.scale)
+            ),
             border_radius=4,
         )
 
@@ -351,37 +500,44 @@ class EC2ManagerApp:
         region = instance['region']
         state = instance['state']
 
-        # 根据状态只显示一个按钮
+        icon_size = self.font.icon_medium
+
         if state in ['stopped', 'terminated']:
-            # 显示启动按钮
             return ft.IconButton(
                 icon=Icons.PLAY_ARROW_ROUNDED,
                 icon_color=ft.Colors.GREEN_400,
-                icon_size=18,
+                icon_size=icon_size,
                 tooltip="启动实例",
                 disabled=(state == 'terminated'),
                 on_click=lambda e, iid=instance_id, r=region: self.start_instance(iid, r),
-                style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=6),
+                style=ft.ButtonStyle(
+                    shape=ft.CircleBorder(),
+                    padding=int(8 * self.font.scale)
+                ),
             )
         elif state in ['running', 'pending']:
-            # 显示停止按钮
             return ft.IconButton(
                 icon=Icons.STOP_ROUNDED,
                 icon_color=ft.Colors.RED_400,
-                icon_size=18,
+                icon_size=icon_size,
                 tooltip="停止实例",
                 disabled=(state == 'pending'),
                 on_click=lambda e, iid=instance_id, r=region: self.stop_instance(iid, r),
-                style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=6),
+                style=ft.ButtonStyle(
+                    shape=ft.CircleBorder(),
+                    padding=int(8 * self.font.scale)
+                ),
             )
         else:
-            # 过渡状态显示禁用的按钮
             return ft.IconButton(
                 icon=Icons.MORE_HORIZ,
                 icon_color=ft.Colors.GREY_500,
-                icon_size=18,
+                icon_size=icon_size,
                 disabled=True,
-                style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=6),
+                style=ft.ButtonStyle(
+                    shape=ft.CircleBorder(),
+                    padding=int(8 * self.font.scale)
+                ),
             )
 
     def start_instance(self, instance_id: str, region: str):
@@ -391,7 +547,6 @@ class EC2ManagerApp:
             self.ec2_service.start_instance(instance_id, region)
             self.log_message(f"实例 {instance_id} 启动命令已发送", "success")
 
-            # 更新该实例状态为 pending
             for inst in self.all_instances:
                 if inst['id'] == instance_id:
                     inst['state'] = 'pending'
@@ -407,7 +562,6 @@ class EC2ManagerApp:
             self.ec2_service.stop_instance(instance_id, region)
             self.log_message(f"实例 {instance_id} 停止命令已发送", "success")
 
-            # 更新该实例状态为 stopping
             for inst in self.all_instances:
                 if inst['id'] == instance_id:
                     inst['state'] = 'stopping'
