@@ -59,6 +59,8 @@ I18N = {
         "log_refreshing": "正在刷新实例数据...",
         "log_refresh_success": "刷新完成，共加载 {count} 个实例",
         "log_regions_detected": "检测到 {count} 个可用区域",
+        "log_pinned": "已置顶实例 {id}",
+        "log_unpinned": "已取消置顶实例 {id}",
         # 主题
         "theme_light": "亮色",
         "theme_dark": "暗色",
@@ -118,6 +120,8 @@ I18N = {
         "log_refreshing": "Refreshing instances data...",
         "log_refresh_success": "Refresh complete, loaded {count} instances",
         "log_regions_detected": "Detected {count} available regions",
+        "log_pinned": "Pinned instance {id}",
+        "log_unpinned": "Unpinned instance {id}",
         # Theme
         "theme_light": "Light",
         "theme_dark": "Dark",

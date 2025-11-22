@@ -1,58 +1,51 @@
 # EC2Control
 
-<p align="center">
-  <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
-</p>
+<div align="center">
 
-<p align="center">
-  <strong>一个便捷的 EC2 实例启停小工具</strong>
-</p>
+A convenient tool for managing EC2 instance start/stop operations
 
-<p align="center">
-  <a href="./README_EN.md">English</a> | <strong>简体中文</strong>
-</p>
+**English** | [简体中文](./README_CN.md)
 
-<p align="center">
-  [![Build Status](https://github.com/1zero224/EC2Control/workflows/build/badge.svg)](https://github.com/1zero224/EC2Control/actions/workflows/build.yml)
-  [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
-  [![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](#)
-  [![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](#)
-  [![Boto3](https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](#)
-  [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](#)
-</p>
+![Build Status](https://img.shields.io/github/actions/workflow/status/1zero224/EC2Control/build.yml)
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python)
+![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?logo=flutter)
+![AWS EC2](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazon-aws)
+![Boto3](https://img.shields.io/badge/Boto3-1.26.0+-FF9900?logo=amazon-aws)
+![License](https://img.shields.io/badge/License-MIT-green)
 
+![Preview](assets/preview-en.jpg)
 
+</div>
 
-## 功能特性
+## Features
 
-- 查看所有 AWS 区域的 EC2 实例
-- 一键启动、停止、重启实例
-- 支持按区域筛选
-- 实例置顶功能
-- 深色/浅色主题切换
-- 中英文界面切换
+- View EC2 instances across all AWS regions
+- One-click start, stop, and reboot instances
+- Filter by region
+- Pin instances to top
+- Dark/Light theme toggle
+- English/Chinese interface switch
 
 
+## User Guide
 
-## 使用教程
+### 1. Download the Application
 
-### 1. 下载应用
+Go to the [Releases](https://github.com/1zero224/EC2Control/releases) page and download the latest `EC2Manager.exe` file.
 
-前往 [Releases](https://github.com/1zero224/EC2Control/releases) 页面下载最新版本的 `EC2Manager.exe` 文件
+### 2. Install AWS CLI
 
-### 2. 安装 AWS CLI
+Visit the [AWS CLI Official Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and follow the instructions.
 
-访问 [AWS CLI 官方安装指南](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) 并按照说明安装
-
-**验证安装：**
+**Verify installation:**
 ```bash
 aws --version
 ```
 
-### 3. 创建 IAM 用户并配置权限
+### 3. Create IAM User and Configure Permissions
 
-1. 登录 [AWS IAM 控制台](https://console.aws.amazon.com/iam/)
-3. 在策略面板点击"创建策略"，在弹出的页面中选择"策略编辑器-JSON"，将以下策略粘贴到策略编辑器中，创建策略：
+1. Log in to the [AWS IAM Console](https://console.aws.amazon.com/iam/)
+2. Go to Policies panel, click "Create policy", select "Policy editor - JSON", and paste the following policy:
 
 ```json
 {
@@ -85,114 +78,112 @@ aws --version
 }
 ```
 
-4. 在用户面板点击"创建用户"，然后在"设置权限"页点击"直接附加策略"，搜索上一步中创建的策略并选中
-5. 在用户详情页面点击"安全凭证"，创建访问密钥，选择"命令行界面 (CLI)"用例，得到并保存 Access Key ID 和 Secret Access Key
+3. Go to Users panel, click "Create user", then in "Set permissions" page, click "Attach policies directly" and select the policy you just created
+4. In the user details page, click "Security credentials", create an access key, select "Command Line Interface (CLI)" use case, and save the Access Key ID and Secret Access Key
 
-### 4. 配置 AWS 凭证
+### 4. Configure AWS Credentials
 
-使用 `aws configure` 命令配置凭证：
+Use the `aws configure` command to set up credentials:
 
 ```bash
 aws configure
 ```
 
-按提示输入：
+Enter the following when prompted:
 
 ```
-AWS Access Key ID [None]: 你的 Access Key ID
-AWS Secret Access Key [None]: 你的 Secret Access Key
-Default region name [None]: 默认区域（例如：us-east-1，填入你最常用的区域）
+AWS Access Key ID [None]: Your Access Key ID
+AWS Secret Access Key [None]: Your Secret Access Key
+Default region name [None]: Default region (e.g., us-east-1, enter your most frequently used region)
 Default output format [None]: json
 ```
 
-### 5. 启动应用
+### 5. Launch the Application
 
-双击 `EC2Manager.exe` 即可使用
+Double-click `EC2Manager.exe` to start using the application.
 
 
+## Development Guide
 
-## 开发
-
-### 安装依赖
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 运行应用
+### Run the Application
 
 ```bash
 python main.py
 ```
 
-### 打包应用
+### Build Executable
 
 ```bash
 flet pack main.py --name "EC2Control" --icon "assets/icon.ico" --product-name "EC2Control"
 ```
 
-打包完成后，可执行文件将生成在 `dist` 目录中。
+The executable will be generated in the `dist` directory.
 
-> **代码质量：** 项目使用 Ruff、Black 和 isort 进行代码检查，配置见 `pyproject.toml`。CI 会自动运行检查。
+> **Code Quality:** This project uses Ruff, Black, and isort for code quality checks. See `pyproject.toml` for configuration. CI runs checks automatically.
 
-### 项目结构
+### Project Structure
 
 ```
 aws_ec2_gui/
 │
-├── .github/                     # GitHub 配置
-│   └── workflows/               # GitHub Actions 工作流
-│       ├── build.yml            # 构建和代码质量检查
-│       └── release.yml          # 自动发布
+├── .github/                     # GitHub configuration
+│   └── workflows/               # GitHub Actions workflows
+│       ├── build.yml            # Build and code quality checks
+│       └── release.yml          # Auto release
 │
-├── assets/                      # 静态资源
+├── assets/                      # Static resources
 │   ├── logo.png                 # Logo
-│   └── icon.ico                 # 图标
+│   └── icon.ico                 # Icon
 │
-├── src/                         # 源代码
-│   ├── config/                  # 配置模块
+├── src/                         # Source code
+│   ├── config/                  # Configuration module
 │   │   ├── __init__.py
-│   │   ├── constants.py         # 常量定义
-│   │   └── settings.py          # 设置管理
+│   │   ├── constants.py         # Constants
+│   │   └── settings.py          # Settings management
 │   │
-│   ├── core/                    # 核心业务逻辑
+│   ├── core/                    # Core business logic
 │   │   ├── __init__.py
-│   │   ├── ec2_service.py       # EC2 服务封装
-│   │   └── cache_manager.py     # 缓存管理
+│   │   ├── ec2_service.py       # EC2 service wrapper
+│   │   └── cache_manager.py     # Cache management
 │   │
-│   ├── ui/                      # 用户界面
+│   ├── ui/                      # User interface
 │   │   ├── __init__.py
-│   │   ├── app.py               # 主应用界面
-│   │   ├── components/          # UI 组件
+│   │   ├── app.py               # Main application UI
+│   │   ├── components/          # UI components
 │   │   │   ├── __init__.py
-│   │   │   ├── toolbar.py       # 工具栏
-│   │   │   ├── instance_table.py # 实例表格
-│   │   │   └── console.py       # 控制台输出
-│   │   └── themes/              # 主题系统
+│   │   │   ├── toolbar.py       # Toolbar
+│   │   │   ├── instance_table.py # Instance table
+│   │   │   └── console.py       # Console output
+│   │   └── themes/              # Theme system
 │   │       ├── __init__.py
-│   │       ├── i18n.py          # 国际化
-│   │       └── font_scale.py    # 字体缩放
+│   │       ├── i18n.py          # Internationalization
+│   │       └── font_scale.py    # Font scaling
 │   │
-│   ├── utils/                   # 工具函数
+│   ├── utils/                   # Utility functions
 │   │   ├── __init__.py
-│   │   └── screen_utils.py      # 屏幕工具
+│   │   └── screen_utils.py      # Screen utilities
 │   │
-│   └── main.py                  # 应用入口
+│   └── main.py                  # Application entry
 │
-├── main.py                      # 启动脚本
-├── requirements.txt             # 项目依赖
-├── pyproject.toml               # 项目配置
-├── README.md                    # 中文文档
-└── README_EN.md                 # 英文文档
+├── main.py                      # Launch script
+├── requirements.txt             # Project dependencies
+├── pyproject.toml               # Code quality configuration
+├── README.md                    # Chinese documentation
+└── README_EN.md                 # English documentation
 ```
 
 
+## Contributing
 
-## 贡献
-
-欢迎提交 Issue 报告和 Pull Request —— 我们感谢所有形式的贡献。
+Feel free to send issue reports and submit pull requests — all contributions are appreciated.
 
 
-## 许可证
+## License
 
-本项目采用 [MIT License](LICENSE) 开源。
+This project is open-sourced under the [MIT License](LICENSE).

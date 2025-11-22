@@ -21,7 +21,7 @@ class Toolbar:
         on_toggle_theme: Callable | None = None,
         on_region_change: Callable | None = None,
         is_dark_mode: bool = True,
-        current_lang: str = "zh",
+        current_lang: str = "en",
     ):
         """
         初始化工具栏

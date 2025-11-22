@@ -20,7 +20,6 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# 启用的规则集
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -32,14 +31,13 @@ select = [
     "SIM", # flake8-simplify (简化建议)
 ]
 
-# 忽略的规则
 ignore = [
-    "E501",   # 行太长 (由 formatter 处理)
-    "B008",   # 函数调用中的默认参数 (Flet 常用模式)
-    "B904",   # 异常处理链 (raise ... from) - 遗留代码兼容
-    "F403",   # 通配符导入 (from module import *) - 配置模块允许
-    "SIM108", # 使用三元运算符 (有时影响可读性)
-    "SIM113", # enumerate 使用建议 (某些场景不适用)
+    "E501",
+    "B008",
+    "B904",
+    "F403",
+    "SIM108",
+    "SIM113",
 ]
 
 [tool.ruff.lint.per-file-ignores]

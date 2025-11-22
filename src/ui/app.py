@@ -38,7 +38,7 @@ class EC2ManagerApp:
 
         # 从本地文件读取用户偏好设置
         settings = CacheManager.load_settings()
-        self.current_lang = settings.get("app_language", "zh")
+        self.current_lang = settings.get("app_language", "en")
         self.is_dark_mode = settings.get("app_dark_mode", True)
 
         # 设置主题
@@ -401,11 +401,11 @@ class EC2ManagerApp:
         if is_pinned:
             # 取消置顶
             self.pinned_instances.discard(instance_id)
-            self._log_message(f"已取消置顶实例 {instance_id}", "info")
+            self._log_message(self.t("log_unpinned", id=instance_id), "info")
         else:
             # 置顶
             self.pinned_instances.add(instance_id)
-            self._log_message(f"已置顶实例 {instance_id}", "info")
+            self._log_message(self.t("log_pinned", id=instance_id), "info")
 
         # 保存设置
         self._save_settings()

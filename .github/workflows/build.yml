@@ -32,7 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史以分析 commits
+          fetch-depth: 0  # Fetch full history for commit analysis
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,16 +43,16 @@ jobs:
       - name: Calculate semantic version
         id: semver
         run: |
-          # 获取最近的 tag
+          # Fetch latest tag
           git fetch --tags --force
           $LATEST_TAG = git describe --tags --abbrev=0 2>$null
 
           if (-not $LATEST_TAG) {
-            # 没有任何 tag，从 0.0 开始
+            # No tags found, start from 0.0
             $LATEST_TAG = "v0.0"
           }
 
-          # 解析版本号 (支持 x.x 和 x.x.x 格式，统一转为 x.x)
+          # Parse version number (supports x.x and x.x.x formats, normalized to x.x)
           if ($LATEST_TAG -match '^v?(\d+)\.(\d+)') {
             $MAJOR = [int]$matches[1]
             $MINOR = [int]$matches[2]
@@ -61,63 +61,63 @@ jobs:
             $MINOR = 0
           }
 
-          echo "最近版本: $LATEST_TAG ($MAJOR.$MINOR)"
+          echo "Latest version: $LATEST_TAG ($MAJOR.$MINOR)"
 
-          # 检查当前 commit 是否有 tag（已发布版本）
+          # Check if current commit has a tag (released version)
           $CURRENT_TAG = git describe --exact-match --tags 2>$null
           if ($CURRENT_TAG) {
-            # 统一转换为 x.x 格式
+            # Normalize to x.x format
             if ($CURRENT_TAG -match '^v?(\d+)\.(\d+)') {
               $VERSION = "$($matches[1]).$($matches[2])"
             } else {
               $VERSION = $CURRENT_TAG -replace '^v', ''
             }
             $IS_RELEASE = "true"
-            echo "✓ 已发布版本: $VERSION"
+            echo "✓ Released version: $VERSION"
           } else {
-            # 分析从最近 tag 到现在的所有 commits
+            # Analyze all commits from latest tag to HEAD
             $COMMITS = git log "$LATEST_TAG..HEAD" --pretty=format:"%s" 2>$null
             if (-not $COMMITS) {
-              # 如果没有 commits，可能是初始化状态
+              # If no commits, might be initial state
               $COMMITS = git log --pretty=format:"%s"
             }
 
             $HAS_BREAKING = $false
             $HAS_FEAT = $false
 
-            # 分析 commit messages
+            # Analyze commit messages
             foreach ($msg in $COMMITS) {
-              # BREAKING CHANGE 或 feat!: 表示重大变更
+              # BREAKING CHANGE or feat!: indicates breaking changes
               if ($msg -match '(BREAKING CHANGE|!:)') {
                 $HAS_BREAKING = $true
               }
-              # feat: 新功能
+              # feat: new feature
               if ($msg -match '^feat(\(.+\))?!?:') {
                 $HAS_FEAT = $true
               }
             }
 
-            # 根据 Conventional Commits 计算版本号 (x.x 格式)
+            # Calculate version based on Conventional Commits (x.x format)
             if ($HAS_BREAKING) {
-              # BREAKING CHANGE -> Major 版本递增
+              # BREAKING CHANGE -> Major version bump
               $MAJOR += 1
               $MINOR = 0
-              echo "检测到 BREAKING CHANGE -> MAJOR 版本递增"
+              echo "Detected BREAKING CHANGE -> MAJOR version bump"
             } elseif ($HAS_FEAT) {
-              # 新功能 -> Minor 版本递增
+              # New feature -> Minor version bump
               $MINOR += 1
-              echo "检测到新功能 -> MINOR 版本递增"
+              echo "Detected new feature -> MINOR version bump"
             } else {
-              # 其他变更（fix, chore, docs 等）-> Minor 版本递增
+              # Other changes (fix, chore, docs, etc.) -> Minor version bump
               $MINOR += 1
-              echo "其他变更 -> MINOR 版本递增"
+              echo "Other changes -> MINOR version bump"
             }
 
             $COMMIT_COUNT = ($COMMITS | Measure-Object).Count
             $COMMIT_HASH = git rev-parse --short HEAD
             $VERSION = "$MAJOR.$MINOR-dev.$COMMIT_COUNT+$COMMIT_HASH"
             $IS_RELEASE = "false"
-            echo "开发版本: $VERSION"
+            echo "Development version: $VERSION"
           }
 
           echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
@@ -136,19 +136,19 @@ jobs:
 
       - name: Code quality - Ruff lint
         run: |
-          echo "运行 Ruff 语法检查..."
+          echo "Running Ruff lint check..."
           ruff check src/ main.py --output-format=github
         continue-on-error: false
 
       - name: Code quality - Black format check
         run: |
-          echo "检查代码格式 (Black)..."
+          echo "Checking code format (Black)..."
           black --check src/ main.py --diff
         continue-on-error: true
 
       - name: Code quality - Import sorting check
         run: |
-          echo "检查导入排序 (isort)..."
+          echo "Checking import sorting (isort)..."
           isort --check-only src/ main.py --diff
         continue-on-error: true
 
