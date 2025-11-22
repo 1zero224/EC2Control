@@ -13,14 +13,13 @@
 </p>
 
 <p align="center">
-<img src="https://github.com/1zero224/EC2Control/actions/workflows/build.yml/badge.svg" alt="Build Status"/>
-<img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
-<img src="https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flet"/>
-<img src="https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS"/>
-<img src="https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="Boto3"/>
-<img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"/>
+  [![Build Status](https://github.com/1zero224/EC2Control/workflows/build/badge.svg)](https://github.com/1zero224/EC2Control/actions/workflows/build.yml)
+  [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
+  [![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](#)
+  [![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](#)
+  [![Boto3](https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](#)
+  [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](#)
 </p>
-
 
 
 ## Features
