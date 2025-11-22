@@ -1,6 +1,8 @@
+<div align="center">
+
 # EC2Control
 
-<div align="center">
+![EC2 Control Logo](assets/logo.png){ width=200px }
 
 A convenient tool for managing EC2 instance start/stop operations
 

@@ -1,6 +1,8 @@
+<div align="center">
+
 # EC2Control
 
-<div align="center">
+![EC2 Control Logo](assets/logo.png){ width=200px }
 
 一个便捷的 EC2 实例启停小工具
 
