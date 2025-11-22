@@ -36,6 +36,7 @@ class EC2ManagerApp:
 
         # 设置主题
         self.page.theme_mode = ft.ThemeMode.DARK if self.is_dark_mode else ft.ThemeMode.LIGHT
+        self.page.bgcolor = None if self.is_dark_mode else "#F4F6F9"
         self.page.title = self.t("app_title")
         self.page.fonts = {
             "YaHei": FONT_FAMILY,
@@ -267,6 +268,7 @@ class EC2ManagerApp:
         self.is_dark_mode = not self.is_dark_mode
         self._save_settings()
         self.page.theme_mode = ft.ThemeMode.DARK if self.is_dark_mode else ft.ThemeMode.LIGHT
+        self.page.bgcolor = None if self.is_dark_mode else "#F4F6F9"
         self.toolbar.update_theme_button(self.is_dark_mode)
         self.page.update()
 

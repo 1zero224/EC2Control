@@ -49,6 +49,5 @@ dist/
 *.app
 
 # Application specific
-icon.ico
 icon.icns
 version_info.txt

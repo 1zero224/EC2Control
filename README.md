@@ -1,243 +1,162 @@
-# AWS EC2 实例管理器
+# AWS EC2 Manager
 
-一个基于 Python Flet 和 Boto3 构建的 AWS EC2 实例管理桌面应用程序，提供简洁易用的图形界面来管理 EC2 实例的启动和停止。
+<div align="center">
+  <img src="assets/logo.png" alt="AWS EC2 Manager Logo" width="200"/>
+  **一个便捷的 EC2 实例启停小工具**
+</div>
+
+<div align="center">
+
+  ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+  ![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+  ![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
+  ![Boto3](https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
+  ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+</div>
+
+---
 
 ## 功能特性
 
-✅ **多区域自动扫描** - 自动扫描所有 AWS 区域的实例
-✅ **智能区域筛选** - 按区域筛选实例，显示每个区域的实例数量
-✅ **启动/停止实例** - 一键启动或停止实例，按钮根据状态智能切换
-✅ **自动刷新** - 30秒自动刷新实例状态，可通过开关控制
-✅ **实时状态同步** - 操作后立即更新本地状态，自动刷新同步真实状态
-✅ **自适应字体** - 根据屏幕分辨率和 DPI 自动调整字体大小
-✅ **暗色模式支持** - 自动跟随系统主题，完美适配暗色模式
-✅ **命令行风格控制台** - 实时显示操作日志和系统状态
+- 查看所有 AWS 区域的 EC2 实例
+- 一键启动、停止、重启实例
+- 支持按区域筛选
+- 实例置顶功能
+- 深色/浅色主题切换
+- 中英文界面切换
 
-## 项目结构
 
-```
-aws_ec2_gui/
-├── main.py                      # 应用程序入口
-├── src/                         # 源代码目录
-│   ├── __init__.py
-│   ├── main.py                  # 备用入口
-│   ├── config/                  # 配置模块
-│   │   ├── __init__.py
-│   │   ├── constants.py         # 常量定义
-│   │   └── settings.py          # 应用设置路径
-│   ├── core/                    # 核心业务逻辑层
-│   │   ├── __init__.py
-│   │   ├── ec2_service.py       # EC2 服务封装
-│   │   └── cache_manager.py     # 缓存管理器
-│   ├── ui/                      # UI层
-│   │   ├── __init__.py
-│   │   ├── app.py               # 应用主界面
-│   │   ├── components/          # UI组件
-│   │   │   ├── __init__.py
-│   │   │   ├── console.py       # 控制台组件
-│   │   │   ├── instance_table.py # 实例表格组件
-│   │   │   └── toolbar.py       # 工具栏组件
-│   │   └── themes/              # 主题配置
-│   │       ├── __init__.py
-│   │       ├── font_scale.py    # 字体缩放系统
-│   │       └── i18n.py          # 国际化配置
-│   └── utils/                   # 工具类
-│       ├── __init__.py
-│       └── screen_utils.py      # 屏幕检测工具
-├── assets/                      # 资源文件
-│   └── icon.ico                 # 应用图标
-├── requirements.txt             # Python 依赖
-├── .env.example                 # 环境变量配置示例
-├── .gitignore                   # Git 忽略规则
-└── README.md                    # 项目说明文档
-```
 
-## 技术栈
+## 使用教程
 
-- **Python 3.8+** - 编程语言
-- **Flet** - 跨平台 GUI 框架
-- **Boto3** - AWS SDK for Python
-- **python-dotenv** - 环境变量管理
+### 1. 下载应用
 
-## 安装步骤
+前往 [Releases](https://github.com/your-repo/aws-ec2-gui/releases) 页面下载最新版本的 `EC2Manager.exe` 文件
 
-### 1. 克隆或下载项目
+### 2. 安装 AWS CLI
 
+访问 [AWS CLI 官方安装指南](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) 并按照说明安装
+
+**验证安装：**
 ```bash
-cd D:\work\aws_ec2_gui
+aws --version
 ```
 
-### 2. 安装依赖
+### 3. 创建 IAM 用户并配置权限
 
-```bash
-pip install -r requirements.txt
+1. 登录 [AWS IAM 控制台](https://console.aws.amazon.com/iam/)
+3. 在策略面板点击"创建策略"，在弹出的页面中选择"策略编辑器-JSON"，将以下策略粘贴到策略编辑器中，创建策略：
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EC2ReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeRegions",
+                "ec2:DescribeTags",
+                "ec2:GetConsoleScreenshot",
+                "ec2:GetConsoleOutput"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2WritePermissions",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:StartInstances",
+                "ec2:StopInstances",
+                "ec2:RebootInstances"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
 ```
 
-### 3. 配置 AWS 凭证
+4. 在用户面板点击"创建用户"，然后在"设置权限"页点击"直接附加策略"，搜索上一步中创建的策略并选中
+5. 在用户详情页面点击"安全凭证"，创建访问密钥，选择"命令行界面 (CLI)"用例，得到并保存 Access Key ID 和 Secret Access Key
 
-**方式一：使用 AWS CLI 配置（推荐）**
+### 4. 配置 AWS 凭证
+
+使用 `aws configure` 命令配置凭证：
 
 ```bash
 aws configure
 ```
 
 按提示输入：
-- AWS Access Key ID
-- AWS Secret Access Key
-- Default region name
-- Default output format
 
-**方式二：使用环境变量**
+```
+AWS Access Key ID [None]: 你的 Access Key ID
+AWS Secret Access Key [None]: 你的 Secret Access Key
+Default region name [None]: 默认区域（例如：us-east-1，填入你最常用的区域）
+Default output format [None]: json
+```
 
-复制 `.env.example` 为 `.env` 并填入凭证：
+### 5. 启动应用
+
+双击 `EC2Manager.exe` 即可使用
+
+---
+
+## 开发应用
+
+### 安装依赖
 
 ```bash
-cp .env.example .env
+pip install -r requirements.txt
 ```
 
-编辑 `.env` 文件：
-
-```
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-AWS_DEFAULT_REGION=us-east-1
-```
-
-### 4. 运行应用
+### 运行应用
 
 ```bash
 python main.py
 ```
 
-## 使用指南
+### 项目结构
 
-### 界面说明
-
-1. **区域选择** - 下拉菜单选择要管理的 AWS 区域
-2. **刷新按钮** - 点击获取最新的实例列表
-3. **实例表格** - 显示实例的详细信息：
-   - 实例名称
-   - 实例 ID
-   - 当前状态
-   - 实例类型
-   - 公网 IP
-   - 私有 IP
-4. **操作按钮** - 每个实例都有启动/停止按钮
-
-### 操作流程
-
-1. **选择区域** - 在顶部选择你的 EC2 实例所在的 AWS 区域
-2. **刷新列表** - 点击"刷新实例列表"按钮加载实例
-3. **启动实例** - 点击绿色播放按钮启动已停止的实例
-4. **停止实例** - 点击红色停止按钮停止运行中的实例
-
-### 状态说明
-
-- 🟢 **running** - 实例正在运行
-- 🔴 **stopped** - 实例已停止
-- 🟡 **pending** - 实例正在启动
-- 🟠 **stopping** - 实例正在停止
-- ⚪ **terminated** - 实例已终止
-
-## 注意事项
-
-⚠️ **重要提示：**
-
-1. **权限要求** - 确保 AWS 凭证具有以下 IAM 权限：
-   - `ec2:DescribeInstances`
-   - `ec2:StartInstances`
-   - `ec2:StopInstances`
-
-2. **安全建议**：
-   - 不要将 AWS 凭证硬编码在代码中
-   - 不要将 `.env` 文件提交到版本控制系统
-   - 使用 IAM 角色时遵循最小权限原则
-
-3. **操作确认**：
-   - 启动/停止实例可能需要几秒到几分钟时间
-   - 操作后会自动刷新状态，请稍等片刻
-
-4. **费用提醒**：
-   - 运行中的 EC2 实例会产生费用
-   - 停止的实例仅收取存储费用
-   - 请根据实际需要管理实例状态
-
-## 故障排除
-
-### 常见问题
-
-**问题 1：提示"未找到 AWS 凭证"**
-
-解决方法：
-- 检查是否已运行 `aws configure`
-- 检查 `.env` 文件是否正确配置
-- 验证环境变量是否已设置
-
-**问题 2：无法连接到 AWS**
-
-解决方法：
-- 检查网络连接
-- 验证 AWS 凭证是否有效
-- 确认选择的区域是否正确
-
-**问题 3：权限不足**
-
-解决方法：
-- 检查 IAM 用户是否具有必要的 EC2 权限
-- 联系 AWS 管理员分配权限
-
-## 系统要求
-
-- Python 3.8 或更高版本
-- Windows / macOS / Linux
-- 稳定的网络连接
-- 有效的 AWS 账户和凭证
-
-## 📦 打包为桌面程序
-
-本应用支持打包成独立的可执行文件,无需安装 Python 即可运行。
-
-### 快速打包
-
-```bash
-# Windows
-build_pyinstaller.bat
-
-# Linux/macOS
-chmod +x build_pyinstaller.sh
-./build_pyinstaller.sh
 ```
-
-打包后的可执行文件位于 `dist/` 目录。
-
-### 详细文档
-
-- **快速入门:** [QUICK_BUILD.md](QUICK_BUILD.md) - 3 步完成打包
-- **完整指南:** [BUILD_GUIDE.md](BUILD_GUIDE.md) - 详细配置和最佳实践
-
-## 开发计划
-
-未来可能添加的功能：
-
-- [ ] 实例重启功能
-- [ ] 批量操作支持
-- [ ] 实例详情查看
-- [ ] 安全组管理
-- [ ] 实例监控指标
-- [ ] 操作日志记录
-
-## 许可证
-
-MIT License
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 联系方式
-
-如有问题或建议，请通过 GitHub Issues 反馈。
+aws_ec2_gui/
+│
+├── assets/                      # 静态资源
+│   ├── logo.png                 # Logo
+│   └── icon.ico                 # 图标
+│
+├── src/                         # 源代码
+│   ├── config/                  # 配置
+│   │   ├── constants.py         # 常量定义
+│   │   └── settings.py          # 设置管理
+│   │
+│   ├── core/                    # 核心逻辑
+│   │   ├── ec2_service.py       # EC2 服务
+│   │   └── cache_manager.py     # 缓存管理
+│   │
+│   ├── ui/                      # 界面
+│   │   ├── app.py               # 主应用
+│   │   ├── components/          # UI 组件
+│   │   └── themes/              # 主题和语言
+│   │
+│   ├── utils/                   # 工具
+│   └── main.py                  # 入口
+│
+├── main.py                      # 启动脚本
+└── requirements.txt             # 依赖列表
+```
 
 ---
 
-**免责声明**：本工具仅供学习和个人使用，使用者需自行承担 AWS 资源管理的责任和费用。
+## 贡献
+
+欢迎提交 Issue 或 Pull Request！
+
+---
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE) 开源。
