@@ -1,18 +1,20 @@
 # EC2 Control
 
-<div align="center">
+<p align="center">
   <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
-  **一个便捷的 EC2 实例启停小工具**
-</div>
+</p>
 
-<div align="center">
+<p align="center">
+  <strong>一个便捷的 EC2 实例启停小工具</strong>
+</p>
+
+<p align="center">
   ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
   ![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white)
   ![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
   ![Boto3](https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
   ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
-</div>
+</p>
 
 ---
 
