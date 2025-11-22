@@ -1,0 +1,44 @@
+# 文本文件自动标准化行结束符
+* text=auto
+
+# Python 文件
+*.py text eol=lf
+*.pyx text eol=lf
+*.pyd binary
+
+# 配置文件
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Windows 特定文件
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Shell 脚本
+*.sh text eol=lf
+
+# 二进制文件
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.tiff binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.zip binary
+*.tar.gz binary
+*.7z binary
+*.rar binary

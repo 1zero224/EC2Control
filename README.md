@@ -1,12 +1,11 @@
-# AWS EC2 Manager
+# EC2 Control
 
 <div align="center">
-  <img src="assets/logo.png" alt="AWS EC2 Manager Logo" width="200"/>
+  <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
   **一个便捷的 EC2 实例启停小工具**
 </div>
 
 <div align="center">
-
   ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
   ![Flet](https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white)
   ![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
