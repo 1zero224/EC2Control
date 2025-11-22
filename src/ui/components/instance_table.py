@@ -448,7 +448,6 @@ class InstanceTable:
     def update_texts(self, t_func):
         """更新语言"""
         self.t = t_func
-        # 更新列头文本（列头是 Container 包裹的 Text 对象）
         self.col_texts["region"].content.value = self.t("col_region")
         self.col_texts["name"].content.value = self.t("col_name")
         self.col_texts["id"].content.value = self.t("col_id")

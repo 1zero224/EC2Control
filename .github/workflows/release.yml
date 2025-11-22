@@ -149,15 +149,16 @@ jobs:
           $CHANGELOG = Get-Content changelog.md -Raw
 
           $NOTES = @"
-          ## EC2Control v$VERSION
+## EC2Control v$VERSION
 
-          ### Downloads
-          - **Windows:** [EC2Control-v$VERSION-Windows.exe](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2Control-v$VERSION-Windows.exe)
-          - **Source Code:** See Assets below for Source code (zip/tar.gz)
+### Downloads
+- **Windows:** [EC2Control-v$VERSION-Windows.exe](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2Control-v$VERSION-Windows.exe)
+- **Source Code:** See Assets below for Source code (zip/tar.gz)
 
-          ---
+---
 
-          $CHANGELOG
+$CHANGELOG
+"@
 
           $NOTES | Out-File -FilePath release_notes.md -Encoding utf8
 
