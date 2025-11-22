@@ -121,6 +121,7 @@ class EC2ManagerApp:
     async def _initialize_service(self):
         """初始化 EC2 服务并加载所有区域的实例"""
         try:
+            # 立即初始化 EC2 服务（不进行网络请求）
             self.ec2_service = EC2Service()
             self._log_message(self.t("log_connected", region=self.ec2_service.default_region), "success")
             self._log_message(
@@ -128,17 +129,7 @@ class EC2ManagerApp:
                 "info"
             )
 
-            # 获取并显示可用区域数量
-            try:
-                available_regions = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    self.ec2_service.get_available_regions
-                )
-                self._log_message(self.t("log_regions_detected", count=len(available_regions)), "info")
-            except Exception as e:
-                self._log_message(f"获取区域列表失败: {str(e)}", "warning")
-
-            # 先加载缓存的实例列表（如果存在）
+            # 先加载缓存的实例列表（如果存在）- 这是最快的方式
             cached_instances = CacheManager.load_instances()
             if cached_instances:
                 self.all_instances = cached_instances
@@ -146,8 +137,11 @@ class EC2ManagerApp:
                 self._apply_filter()
                 self._log_message(self.t("log_cache_loaded", count=len(cached_instances)), "info")
 
-            # 后台加载最新的实例数据
-            await self._load_all_regions()
+            # 延迟获取可用区域数量（非阻塞）
+            asyncio.create_task(self._load_regions_info())
+
+            # 后台加载最新的实例数据（非阻塞）
+            asyncio.create_task(self._background_load_instances())
 
             # 启动自动刷新
             if self.toolbar.is_auto_refresh_enabled():
@@ -155,6 +149,24 @@ class EC2ManagerApp:
 
         except Exception as e:
             self._log_message(self.t("log_init_failed", error=str(e)), "error")
+
+    async def _load_regions_info(self):
+        """后台加载区域信息（非阻塞）"""
+        try:
+            available_regions = await asyncio.get_event_loop().run_in_executor(
+                None,
+                self.ec2_service.get_available_regions
+            )
+            self._log_message(self.t("log_regions_detected", count=len(available_regions)), "info")
+        except Exception as e:
+            self._log_message(f"获取区域列表失败: {str(e)}", "warning")
+
+    async def _background_load_instances(self):
+        """后台加载实例列表（非阻塞）"""
+        try:
+            await self._load_all_regions()
+        except Exception as e:
+            self._log_message(f"后台加载实例失败: {str(e)}", "warning")
 
     async def _load_all_regions(self, is_manual: bool = False):
         """

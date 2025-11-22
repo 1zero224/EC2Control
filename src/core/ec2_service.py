@@ -2,10 +2,7 @@
 AWS EC2 实例管理服务层
 提供 EC2 实例的查询、启动和停止功能
 """
-import boto3
 from typing import List, Dict, Optional, Callable
-from botocore.exceptions import ClientError, NoCredentialsError
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class EC2Service:
@@ -18,6 +15,10 @@ class EC2Service:
         Args:
             region_name: AWS 区域名称，None 表示使用默认配置
         """
+        # 延迟导入 boto3，减少启动时间
+        import boto3
+        from botocore.exceptions import NoCredentialsError
+
         try:
             # 获取默认区域
             session = boto3.Session()
@@ -38,6 +39,8 @@ class EC2Service:
         Returns:
             可用区域名称列表
         """
+        from botocore.exceptions import ClientError
+
         if self._available_regions is not None:
             return self._available_regions
 
@@ -55,12 +58,16 @@ class EC2Service:
 
     def get_client_for_region(self, region: str):
         """获取指定区域的 EC2 客户端（带缓存）"""
+        import boto3
+
         if region not in self.ec2_clients:
             self.ec2_clients[region] = boto3.client('ec2', region_name=region)
         return self.ec2_clients[region]
 
     def list_instances_in_region(self, region: str) -> List[Dict[str, str]]:
         """获取指定区域的实例列表"""
+        from botocore.exceptions import ClientError
+
         try:
             client = self.get_client_for_region(region)
             response = client.describe_instances()
@@ -119,6 +126,8 @@ class EC2Service:
         Returns:
             所有区域的实例列表
         """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         # 动态获取账户的所有可用区域
         try:
             available_regions = self.get_available_regions()
@@ -161,6 +170,8 @@ class EC2Service:
         Returns:
             操作是否成功
         """
+        from botocore.exceptions import ClientError
+
         try:
             client = self.get_client_for_region(region)
             client.start_instances(InstanceIds=[instance_id])
@@ -182,6 +193,8 @@ class EC2Service:
         Returns:
             操作是否成功
         """
+        from botocore.exceptions import ClientError
+
         try:
             client = self.get_client_for_region(region)
             client.stop_instances(InstanceIds=[instance_id])
@@ -203,6 +216,8 @@ class EC2Service:
         Returns:
             操作是否成功
         """
+        from botocore.exceptions import ClientError
+
         try:
             client = self.get_client_for_region(region)
             client.reboot_instances(InstanceIds=[instance_id])
@@ -243,6 +258,8 @@ class EC2Service:
         Returns:
             包含 instance_state, system_status, instance_status 的字典
         """
+        from botocore.exceptions import ClientError
+
         try:
             client = self.get_client_for_region(region)
             response = client.describe_instance_status(InstanceIds=[instance_id])
