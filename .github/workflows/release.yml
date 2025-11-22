@@ -148,18 +148,13 @@ jobs:
           $TAG = "${{ steps.version.outputs.TAG }}"
           $CHANGELOG = Get-Content changelog.md -Raw
 
-          $NOTES = @"
-## EC2Control v$VERSION
+          $HEADER = "## EC2Control v$VERSION`n`n"
+          $DOWNLOADS = "### Downloads`n"
+          $DOWNLOADS += "- **Windows:** [EC2Control-v$VERSION-Windows.exe](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2Control-v$VERSION-Windows.exe)`n"
+          $DOWNLOADS += "- **Source Code:** See Assets below for Source code (zip/tar.gz)`n`n"
+          $SEPARATOR = "---`n`n"
 
-### Downloads
-- **Windows:** [EC2Control-v$VERSION-Windows.exe](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2Control-v$VERSION-Windows.exe)
-- **Source Code:** See Assets below for Source code (zip/tar.gz)
-
----
-
-$CHANGELOG
-"@
-
+          $NOTES = $HEADER + $DOWNLOADS + $SEPARATOR + $CHANGELOG
           $NOTES | Out-File -FilePath release_notes.md -Encoding utf8
 
       - name: Create GitHub Release
