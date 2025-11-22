@@ -1,20 +1,26 @@
 """
 实例表格组件
 """
+
+from collections.abc import Callable
+
 import flet as ft
 from flet import Icons
-from typing import List, Dict, Callable, Optional
 
 
 class InstanceTable:
     """EC2实例表格组件"""
 
-    def __init__(self, font, t_func,
-                 on_start: Optional[Callable] = None,
-                 on_stop: Optional[Callable] = None,
-                 on_reboot: Optional[Callable] = None,
-                 on_pin: Optional[Callable] = None,
-                 on_sort: Optional[Callable] = None):
+    def __init__(
+        self,
+        font,
+        t_func,
+        on_start: Callable | None = None,
+        on_stop: Callable | None = None,
+        on_reboot: Callable | None = None,
+        on_pin: Callable | None = None,
+        on_sort: Callable | None = None,
+    ):
         """
         初始化实例表格
 
@@ -43,7 +49,8 @@ class InstanceTable:
 
     def _build(self):
         """构建表格UI"""
-        # 表格列头文本引用（使用 Container 精确控制垂直对齐）
+
+        # 表格列头文本引用
         def create_header_label(text):
             return ft.Container(
                 content=ft.Text(
@@ -54,8 +61,6 @@ class InstanceTable:
                     text_align=ft.TextAlign.LEFT,
                 ),
                 alignment=ft.alignment.center_left,
-                padding=ft.padding.only(bottom=3),
-                height=self.font.table_header + 8,
             )
 
         self.col_texts = {
@@ -71,10 +76,14 @@ class InstanceTable:
 
         self.table = ft.DataTable(
             columns=[
-                ft.DataColumn(self.col_texts["region"], on_sort=lambda e: self._handle_sort("region")),
+                ft.DataColumn(
+                    self.col_texts["region"], on_sort=lambda e: self._handle_sort("region")
+                ),
                 ft.DataColumn(self.col_texts["name"], on_sort=lambda e: self._handle_sort("name")),
                 ft.DataColumn(self.col_texts["id"], on_sort=lambda e: self._handle_sort("id")),
-                ft.DataColumn(self.col_texts["state"], on_sort=lambda e: self._handle_sort("state")),
+                ft.DataColumn(
+                    self.col_texts["state"], on_sort=lambda e: self._handle_sort("state")
+                ),
                 ft.DataColumn(self.col_texts["type"], on_sort=lambda e: self._handle_sort("type")),
                 ft.DataColumn(self.col_texts["public_ip"]),
                 ft.DataColumn(self.col_texts["private_ip"]),
@@ -101,7 +110,7 @@ class InstanceTable:
             padding=0,
         )
 
-    def update_instances(self, instances: List[Dict], pinned_instances: set = None):
+    def update_instances(self, instances: list[dict], pinned_instances: set = None):
         """
         更新表格数据
 
@@ -115,8 +124,8 @@ class InstanceTable:
             pinned_instances = set()
 
         # 分离置顶和非置顶实例
-        pinned = [inst for inst in instances if inst['id'] in pinned_instances]
-        unpinned = [inst for inst in instances if inst['id'] not in pinned_instances]
+        pinned = [inst for inst in instances if inst["id"] in pinned_instances]
+        unpinned = [inst for inst in instances if inst["id"] not in pinned_instances]
 
         # 对非置顶实例进行排序
         if self.sort_column:
@@ -126,21 +135,25 @@ class InstanceTable:
         sorted_instances = pinned + unpinned
 
         for instance in sorted_instances:
-            is_pinned = instance['id'] in pinned_instances
-            state = instance['state']
+            is_pinned = instance["id"] in pinned_instances
+            state = instance["state"]
             state_badge = self._create_state_badge(state)
             action_button = self._create_action_button(instance, is_pinned)
 
-            # 区域单元格（添加置顶图标）
+            # 区域单元格
             region_content = ft.Row(
                 [
-                    ft.Icon(Icons.PUSH_PIN, size=self.font.icon_small, color=ft.Colors.PRIMARY) if is_pinned else ft.Container(width=0),
+                    (
+                        ft.Icon(Icons.PUSH_PIN, size=self.font.icon_small, color=ft.Colors.PRIMARY)
+                        if is_pinned
+                        else ft.Container(width=0)
+                    ),
                     ft.Text(
-                        instance['region'],
+                        instance["region"],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
                         font_family="Consolas",
-                        selectable=True
+                        selectable=True,
                     ),
                 ],
                 spacing=4,
@@ -150,42 +163,52 @@ class InstanceTable:
             row = ft.DataRow(
                 cells=[
                     ft.DataCell(region_content),
-                    ft.DataCell(ft.Text(
-                        instance['name'],
-                        size=self.font.table_cell,
-                        weight=ft.FontWeight.W_500,
-                        font_family="YaHei",
-                        selectable=True
-                    )),
-                    ft.DataCell(ft.Text(
-                        instance['id'],
-                        size=self.font.table_cell,
-                        weight=ft.FontWeight.W_400,
-                        font_family="Consolas",
-                        selectable=True
-                    )),
+                    ft.DataCell(
+                        ft.Text(
+                            instance["name"],
+                            size=self.font.table_cell,
+                            weight=ft.FontWeight.W_500,
+                            font_family="YaHei",
+                            selectable=True,
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Text(
+                            instance["id"],
+                            size=self.font.table_cell,
+                            weight=ft.FontWeight.W_400,
+                            font_family="Consolas",
+                            selectable=True,
+                        )
+                    ),
                     ft.DataCell(state_badge),
-                    ft.DataCell(ft.Text(
-                        instance['type'],
-                        size=self.font.table_cell,
-                        weight=ft.FontWeight.W_400,
-                        font_family="YaHei",
-                        selectable=True
-                    )),
-                    ft.DataCell(ft.Text(
-                        instance['public_ip'],
-                        size=self.font.table_cell,
-                        weight=ft.FontWeight.W_400,
-                        font_family="Consolas",
-                        selectable=True
-                    )),
-                    ft.DataCell(ft.Text(
-                        instance['private_ip'],
-                        size=self.font.table_cell,
-                        weight=ft.FontWeight.W_400,
-                        font_family="Consolas",
-                        selectable=True
-                    )),
+                    ft.DataCell(
+                        ft.Text(
+                            instance["type"],
+                            size=self.font.table_cell,
+                            weight=ft.FontWeight.W_400,
+                            font_family="YaHei",
+                            selectable=True,
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Text(
+                            instance["public_ip"],
+                            size=self.font.table_cell,
+                            weight=ft.FontWeight.W_400,
+                            font_family="Consolas",
+                            selectable=True,
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Text(
+                            instance["private_ip"],
+                            size=self.font.table_cell,
+                            weight=ft.FontWeight.W_400,
+                            font_family="Consolas",
+                            selectable=True,
+                        )
+                    ),
                     ft.DataCell(action_button),
                 ]
             )
@@ -194,15 +217,41 @@ class InstanceTable:
     def _create_state_badge(self, state: str) -> ft.Container:
         """创建状态徽章"""
         style_map = {
-            'running': {"bg": ft.Colors.GREEN_800, "text": ft.Colors.WHITE, "label": self.t("state_running")},
-            'stopped': {"bg": ft.Colors.RED_800, "text": ft.Colors.WHITE, "label": self.t("state_stopped")},
-            'pending': {"bg": ft.Colors.AMBER_800, "text": ft.Colors.WHITE, "label": self.t("state_pending")},
-            'stopping': {"bg": ft.Colors.ORANGE_800, "text": ft.Colors.WHITE, "label": self.t("state_stopping")},
-            'rebooting': {"bg": ft.Colors.BLUE_800, "text": ft.Colors.WHITE, "label": self.t("state_rebooting")},
-            'terminated': {"bg": ft.Colors.GREY_700, "text": ft.Colors.WHITE, "label": self.t("state_terminated")},
+            "running": {
+                "bg": ft.Colors.GREEN_800,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_running"),
+            },
+            "stopped": {
+                "bg": ft.Colors.RED_800,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_stopped"),
+            },
+            "pending": {
+                "bg": ft.Colors.AMBER_800,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_pending"),
+            },
+            "stopping": {
+                "bg": ft.Colors.ORANGE_800,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_stopping"),
+            },
+            "rebooting": {
+                "bg": ft.Colors.BLUE_800,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_rebooting"),
+            },
+            "terminated": {
+                "bg": ft.Colors.GREY_700,
+                "text": ft.Colors.WHITE,
+                "label": self.t("state_terminated"),
+            },
         }
 
-        style = style_map.get(state, {"bg": ft.Colors.GREY_700, "text": ft.Colors.GREY_300, "label": state})
+        style = style_map.get(
+            state, {"bg": ft.Colors.GREY_700, "text": ft.Colors.GREY_300, "label": state}
+        )
 
         return ft.Container(
             content=ft.Text(
@@ -210,19 +259,19 @@ class InstanceTable:
                 size=self.font.tiny,
                 weight=ft.FontWeight.W_600,
                 color=style["text"],
-                font_family="YaHei"
+                font_family="YaHei",
             ),
             bgcolor=style["bg"],
             padding=ft.Padding(
                 int(10 * self.font.scale),
                 int(4 * self.font.scale),
                 int(10 * self.font.scale),
-                int(4 * self.font.scale)
+                int(4 * self.font.scale),
             ),
             border_radius=4,
         )
 
-    def _create_action_button(self, instance: Dict, is_pinned: bool = False) -> ft.Container:
+    def _create_action_button(self, instance: dict, is_pinned: bool = False) -> ft.Container:
         """
         创建操作按钮
 
@@ -230,9 +279,9 @@ class InstanceTable:
             instance: 实例信息
             is_pinned: 是否已置顶
         """
-        instance_id = instance['id']
-        region = instance['region']
-        state = instance['state']
+        instance_id = instance["id"]
+        region = instance["region"]
+        state = instance["state"]
 
         icon_size = self.font.icon_medium
         action_width = int(120 * self.font.scale)  # 增加宽度以容纳置顶按钮
@@ -244,30 +293,24 @@ class InstanceTable:
             icon_size=icon_size,
             tooltip=self.t("tip_unpin") if is_pinned else self.t("tip_pin"),
             on_click=lambda e, iid=instance_id: self._handle_pin(iid, is_pinned),
-            style=ft.ButtonStyle(
-                shape=ft.CircleBorder(),
-                padding=int(8 * self.font.scale)
-            ),
+            style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
         )
 
-        if state in ['stopped', 'terminated']:
+        if state in ["stopped", "terminated"]:
             buttons = [
                 ft.IconButton(
                     icon=Icons.PLAY_ARROW_ROUNDED,
                     icon_color=ft.Colors.GREEN_400,
                     icon_size=icon_size,
                     tooltip=self.t("tip_start"),
-                    disabled=(state == 'terminated'),
+                    disabled=(state == "terminated"),
                     on_click=lambda e, iid=instance_id, r=region: self._handle_start(iid, r),
-                    style=ft.ButtonStyle(
-                        shape=ft.CircleBorder(),
-                        padding=int(8 * self.font.scale)
-                    ),
+                    style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
                 ),
                 pin_button,
             ]
             content = ft.Row(buttons, spacing=0, tight=True, alignment=ft.MainAxisAlignment.START)
-        elif state == 'running':
+        elif state == "running":
             buttons = [
                 ft.IconButton(
                     icon=Icons.STOP_ROUNDED,
@@ -275,10 +318,7 @@ class InstanceTable:
                     icon_size=icon_size,
                     tooltip=self.t("tip_stop"),
                     on_click=lambda e, iid=instance_id, r=region: self._handle_stop(iid, r),
-                    style=ft.ButtonStyle(
-                        shape=ft.CircleBorder(),
-                        padding=int(8 * self.font.scale)
-                    ),
+                    style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
                 ),
                 ft.IconButton(
                     icon=Icons.RESTART_ALT_ROUNDED,
@@ -286,26 +326,20 @@ class InstanceTable:
                     icon_size=icon_size,
                     tooltip=self.t("tip_reboot"),
                     on_click=lambda e, iid=instance_id, r=region: self._handle_reboot(iid, r),
-                    style=ft.ButtonStyle(
-                        shape=ft.CircleBorder(),
-                        padding=int(8 * self.font.scale)
-                    ),
+                    style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
                 ),
                 pin_button,
             ]
             content = ft.Row(buttons, spacing=0, tight=True)
-        elif state in ['pending', 'rebooting', 'stopping']:
+        elif state in ["pending", "rebooting", "stopping"]:
             buttons = [
                 ft.IconButton(
-                    icon=Icons.HOURGLASS_EMPTY if state == 'rebooting' else Icons.STOP_ROUNDED,
-                    icon_color=ft.Colors.BLUE_400 if state == 'rebooting' else ft.Colors.RED_400,
+                    icon=Icons.HOURGLASS_EMPTY if state == "rebooting" else Icons.STOP_ROUNDED,
+                    icon_color=ft.Colors.BLUE_400 if state == "rebooting" else ft.Colors.RED_400,
                     icon_size=icon_size,
-                    tooltip=self.t("tip_rebooting") if state == 'rebooting' else self.t("tip_stop"),
+                    tooltip=self.t("tip_rebooting") if state == "rebooting" else self.t("tip_stop"),
                     disabled=True,
-                    style=ft.ButtonStyle(
-                        shape=ft.CircleBorder(),
-                        padding=int(8 * self.font.scale)
-                    ),
+                    style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
                 ),
                 pin_button,
             ]
@@ -317,10 +351,7 @@ class InstanceTable:
                     icon_color=ft.Colors.GREY_500,
                     icon_size=icon_size,
                     disabled=True,
-                    style=ft.ButtonStyle(
-                        shape=ft.CircleBorder(),
-                        padding=int(8 * self.font.scale)
-                    ),
+                    style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=int(8 * self.font.scale)),
                 ),
                 pin_button,
             ]
@@ -380,7 +411,7 @@ class InstanceTable:
         if self.on_sort:
             self.on_sort()
 
-    def _sort_instances(self, instances: List[Dict], column: str, ascending: bool) -> List[Dict]:
+    def _sort_instances(self, instances: list[dict], column: str, ascending: bool) -> list[dict]:
         """
         对实例列表进行排序
 
@@ -394,21 +425,21 @@ class InstanceTable:
         """
         # 状态排序优先级映射
         state_priority = {
-            'running': 1,
-            'rebooting': 2,
-            'pending': 3,
-            'stopping': 4,
-            'stopped': 5,
-            'terminated': 6,
+            "running": 1,
+            "rebooting": 2,
+            "pending": 3,
+            "stopping": 4,
+            "stopped": 5,
+            "terminated": 6,
         }
 
         def get_sort_key(inst):
-            value = inst.get(column, '')
+            value = inst.get(column, "")
             # 特殊处理状态排序
-            if column == 'state':
+            if column == "state":
                 return state_priority.get(value, 99)
             # 处理 N/A 和空值
-            if value == 'N/A' or value == '':
+            if value == "N/A" or value == "":
                 return chr(0xFFFF) if ascending else chr(0)  # 放到最后或最前
             return str(value).lower()
 
@@ -417,7 +448,7 @@ class InstanceTable:
     def update_texts(self, t_func):
         """更新语言"""
         self.t = t_func
-        # 更新列头文本（列头现在是 Container 对象，需要更新其中的 Text 控件）
+        # 更新列头文本（列头是 Container 包裹的 Text 对象）
         self.col_texts["region"].content.value = self.t("col_region")
         self.col_texts["name"].content.value = self.t("col_name")
         self.col_texts["id"].content.value = self.t("col_id")

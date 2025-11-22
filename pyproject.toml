@@ -1,0 +1,73 @@
+# Python 项目配置文件
+# 包含 Ruff, Black, isort 的所有配置
+
+[tool.ruff]
+# 目标 Python 版本
+target-version = "py311"
+
+# 每行最大字符数
+line-length = 100
+
+# 排除的目录
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "dist",
+    "build",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+# 启用的规则集
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "N",   # pep8-naming
+    "UP",  # pyupgrade (现代化 Python 语法)
+    "B",   # flake8-bugbear (常见错误模式)
+    "SIM", # flake8-simplify (简化建议)
+]
+
+# 忽略的规则
+ignore = [
+    "E501",   # 行太长 (由 formatter 处理)
+    "B008",   # 函数调用中的默认参数 (Flet 常用模式)
+    "B904",   # 异常处理链 (raise ... from) - 遗留代码兼容
+    "F403",   # 通配符导入 (from module import *) - 配置模块允许
+    "SIM108", # 使用三元运算符 (有时影响可读性)
+    "SIM113", # enumerate 使用建议 (某些场景不适用)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py 文件允许未使用的导入
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+# 代码格式化配置 (与 Black 兼容)
+quote-style = "double"
+indent-style = "space"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | dist
+  | build
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+known_first_party = ["src"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]

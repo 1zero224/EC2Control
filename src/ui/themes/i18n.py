@@ -5,7 +5,7 @@
 # 国际化翻译字典
 I18N = {
     "zh": {
-        "app_title": "EC2 Control",
+        "app_title": "EC2Control",
         "region_filter": "区域筛选",
         "all_regions": "全部区域",
         "refresh": "刷新",
@@ -64,7 +64,7 @@ I18N = {
         "theme_dark": "暗色",
     },
     "en": {
-        "app_title": "EC2 Control",
+        "app_title": "EC2Control",
         "region_filter": "Region Filter",
         "all_regions": "All Regions",
         "refresh": "Refresh",
@@ -121,7 +121,7 @@ I18N = {
         # Theme
         "theme_light": "Light",
         "theme_dark": "Dark",
-    }
+    },
 }
 
 

@@ -1,7 +1,9 @@
 """
 字体缩放系统 - 根据屏幕分辨率自适应
 """
+
 import flet as ft
+
 from src.utils.screen_utils import get_screen_resolution
 
 
@@ -14,15 +16,7 @@ class FontScale:
         # 计算基于分辨率的缩放因子（基准：1920x1080）
         width_scale = self.screen_width / 1920
         height_scale = self.screen_height / 1080
-        resolution_scale = min(width_scale, height_scale)
-
-        # 高分辨率屏幕（2K/4K）额外放大字体
-        if self.screen_width >= 2560:
-            self.scale = 1.15
-        elif self.screen_width >= 1920:
-            self.scale = 1.05
-        else:
-            self.scale = 1.0
+        self.scale = min(width_scale, height_scale, 1.3)
 
     def size(self, base_size: int) -> int:
         """计算缩放后的字体大小"""

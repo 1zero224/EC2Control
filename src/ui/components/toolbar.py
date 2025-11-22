@@ -1,22 +1,28 @@
 """
 工具栏组件
 """
+
+from collections.abc import Callable
+
 import flet as ft
 from flet import Icons
-from typing import Callable, Optional, List
 
 
 class Toolbar:
     """顶部工具栏组件"""
 
-    def __init__(self, font, t_func,
-                 on_refresh: Optional[Callable] = None,
-                 on_toggle_auto_refresh: Optional[Callable] = None,
-                 on_toggle_language: Optional[Callable] = None,
-                 on_toggle_theme: Optional[Callable] = None,
-                 on_region_change: Optional[Callable] = None,
-                 is_dark_mode: bool = True,
-                 current_lang: str = "zh"):
+    def __init__(
+        self,
+        font,
+        t_func,
+        on_refresh: Callable | None = None,
+        on_toggle_auto_refresh: Callable | None = None,
+        on_toggle_language: Callable | None = None,
+        on_toggle_theme: Callable | None = None,
+        on_region_change: Callable | None = None,
+        is_dark_mode: bool = True,
+        current_lang: str = "zh",
+    ):
         """
         初始化工具栏
 
@@ -79,14 +85,9 @@ class Toolbar:
             border_color=ft.Colors.with_opacity(0.5, ft.Colors.ON_SURFACE),
             focused_border_color=ft.Colors.PRIMARY,
             text_style=ft.TextStyle(
-                font_family="YaHei",
-                size=self.font.dropdown,
-                weight=ft.FontWeight.W_400
+                font_family="YaHei", size=self.font.dropdown, weight=ft.FontWeight.W_400
             ),
-            label_style=ft.TextStyle(
-                font_family="YaHei",
-                size=self.font.small
-            ),
+            label_style=ft.TextStyle(font_family="YaHei", size=self.font.small),
         )
 
         # 刷新按钮文本
@@ -95,16 +96,16 @@ class Toolbar:
             size=self.font.button,
             font_family="YaHei",
             weight=ft.FontWeight.W_400,
-            color=ft.Colors.WHITE
+            color=ft.Colors.WHITE,
         )
 
-        # 刷新图标（需要单独引用以便添加动画）
+        # 刷新图标
         self.refresh_icon = ft.Icon(
             Icons.REFRESH,
             size=self.font.icon_small,
             color=ft.Colors.WHITE,
             rotate=ft.Rotate(0),
-            animate_rotation=ft.Animation(1000, ft.AnimationCurve.LINEAR)
+            animate_rotation=ft.Animation(1000, ft.AnimationCurve.LINEAR),
         )
 
         # 刷新按钮
@@ -154,12 +155,12 @@ class Toolbar:
         """获取工具栏控件"""
         return self.control
 
-    def update_region_options(self, instances: List, current_value: str = "all"):
+    def update_region_options(self, instances: list, current_value: str = "all"):
         """更新区域筛选选项"""
-        regions = set(inst['region'] for inst in instances)
+        regions = set(inst["region"] for inst in instances)
         region_counts = {}
         for inst in instances:
-            region = inst['region']
+            region = inst["region"]
             region_counts[region] = region_counts.get(region, 0) + 1
 
         self.region_filter.options.clear()
@@ -168,9 +169,7 @@ class Toolbar:
         )
         for region in sorted(regions):
             count = region_counts[region]
-            self.region_filter.options.append(
-                ft.dropdown.Option(region, f"{region} ({count})")
-            )
+            self.region_filter.options.append(ft.dropdown.Option(region, f"{region} ({count})"))
 
         self.region_filter.value = current_value
         self.region_filter.update()
@@ -196,9 +195,10 @@ class Toolbar:
             # 禁用状态：降低不透明度和更改背景色
             self.refresh_button.bgcolor = ft.Colors.BLUE_900
             self.refresh_button.opacity = 0.7
-            # 启动旋转动画（多次旋转以保持动画效果）
+            # 启动旋转动画
             import math
-            self.refresh_icon.rotate = ft.Rotate(angle=4 * math.pi)  # 720度（2圈）
+
+            self.refresh_icon.rotate = ft.Rotate(angle=4 * math.pi)
         else:
             # 恢复正常状态
             self.refresh_button.bgcolor = ft.Colors.BLUE_700
@@ -235,7 +235,9 @@ class Toolbar:
         self.current_lang = current_lang
         self.title_text.value = self.t("app_title")
         self.lang_button.tooltip = "English" if self.current_lang == "zh" else "中文"
-        self.theme_button.tooltip = self.t("theme_light") if self.is_dark_mode else self.t("theme_dark")
+        self.theme_button.tooltip = (
+            self.t("theme_light") if self.is_dark_mode else self.t("theme_dark")
+        )
         self.refresh_text.value = self.t("refresh")
         self.auto_refresh_switch.label = self.t("auto_refresh")
         self.region_filter.label = self.t("region_filter")

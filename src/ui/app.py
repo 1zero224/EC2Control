@@ -1,22 +1,29 @@
 """
 EC2 管理应用主类
 """
-import flet as ft
+
 import asyncio
 from functools import partial
 
+import flet as ft
+
 from src.config.constants import (
-    FONT_FAMILY, MONO_FONT,
-    DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, DEFAULT_PADDING,
-    AUTO_REFRESH_INTERVAL, REBOOT_POLL_MAX_ATTEMPTS, REBOOT_POLL_INTERVAL
+    AUTO_REFRESH_INTERVAL,
+    DEFAULT_PADDING,
+    DEFAULT_WINDOW_HEIGHT,
+    DEFAULT_WINDOW_WIDTH,
+    FONT_FAMILY,
+    MONO_FONT,
+    REBOOT_POLL_INTERVAL,
+    REBOOT_POLL_MAX_ATTEMPTS,
 )
-from src.core.ec2_service import EC2Service
 from src.core.cache_manager import CacheManager
-from src.ui.themes.font_scale import FontScale
-from src.ui.themes.i18n import I18N, get_text
-from src.ui.components.toolbar import Toolbar
-from src.ui.components.instance_table import InstanceTable
+from src.core.ec2_service import EC2Service
 from src.ui.components.console import ConsolePanel
+from src.ui.components.instance_table import InstanceTable
+from src.ui.components.toolbar import Toolbar
+from src.ui.themes.font_scale import FontScale
+from src.ui.themes.i18n import get_text
 
 
 class EC2ManagerApp:
@@ -78,7 +85,7 @@ class EC2ManagerApp:
             on_toggle_theme=self._toggle_theme,
             on_region_change=self._on_region_filter_changed,
             is_dark_mode=self.is_dark_mode,
-            current_lang=self.current_lang
+            current_lang=self.current_lang,
         )
 
         # 实例表格
@@ -89,19 +96,34 @@ class EC2ManagerApp:
             on_stop=self._stop_instance,
             on_reboot=self._reboot_instance,
             on_pin=self._toggle_pin_instance,
-            on_sort=self._handle_sort_changed
+            on_sort=self._handle_sort_changed,
         )
 
         # 控制台
         self.console = ConsolePanel(font=self.font, t_func=self.t)
 
-        # 主容器
+        # 主容器：使用固定高度的工具栏 + 可扩展的内容区
+        # 内容区分为：表格区（65%）和日志区（35%）
+        content_area = ft.Column(
+            [
+                ft.Container(
+                    content=self.instance_table.get_control(),
+                    expand=65,  # 表格占 65% 的空间
+                ),
+                ft.Container(
+                    content=self.console.get_control(),
+                    expand=35,  # 日志占 35% 的空间
+                ),
+            ],
+            spacing=16,
+            expand=True,
+        )
+
         main_container = ft.Column(
             [
                 self.toolbar.get_control(),
                 ft.Divider(height=1, color=ft.Colors.with_opacity(0.15, ft.Colors.ON_SURFACE)),
-                self.instance_table.get_control(),
-                self.console.get_control(),
+                content_area,
             ],
             spacing=16,
             expand=True,
@@ -123,10 +145,17 @@ class EC2ManagerApp:
         try:
             # 立即初始化 EC2 服务（不进行网络请求）
             self.ec2_service = EC2Service()
-            self._log_message(self.t("log_connected", region=self.ec2_service.default_region), "success")
             self._log_message(
-                self.t("log_screen_info", width=self.font.screen_width, height=self.font.screen_height, scale=self.font.scale),
-                "info"
+                self.t("log_connected", region=self.ec2_service.default_region), "success"
+            )
+            self._log_message(
+                self.t(
+                    "log_screen_info",
+                    width=self.font.screen_width,
+                    height=self.font.screen_height,
+                    scale=self.font.scale,
+                ),
+                "info",
             )
 
             # 先加载缓存的实例列表（如果存在）- 这是最快的方式
@@ -154,8 +183,7 @@ class EC2ManagerApp:
         """后台加载区域信息（非阻塞）"""
         try:
             available_regions = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.ec2_service.get_available_regions
+                None, self.ec2_service.get_available_regions
             )
             self._log_message(self.t("log_regions_detected", count=len(available_regions)), "info")
         except Exception as e:
@@ -187,18 +215,19 @@ class EC2ManagerApp:
 
         try:
             instances = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: self.ec2_service.list_all_instances()
+                None, lambda: self.ec2_service.list_all_instances()
             )
 
             # 保持正在重启的实例的 rebooting 状态
             for inst in instances:
-                if inst['id'] in self.rebooting_instances:
-                    inst['state'] = 'rebooting'
+                if inst["id"] in self.rebooting_instances:
+                    inst["state"] = "rebooting"
 
             self.all_instances = instances
             CacheManager.save_instances(instances)
-            self.toolbar.update_region_options(self.all_instances, self.toolbar.get_selected_region())
+            self.toolbar.update_region_options(
+                self.all_instances, self.toolbar.get_selected_region()
+            )
             self._apply_filter()
 
             # 如果是手动刷新，显示成功消息
@@ -221,8 +250,7 @@ class EC2ManagerApp:
             self.filtered_instances = self.all_instances
         else:
             self.filtered_instances = [
-                inst for inst in self.all_instances
-                if inst['region'] == selected_region
+                inst for inst in self.all_instances if inst["region"] == selected_region
             ]
 
         self.instance_table.update_instances(self.filtered_instances, self.pinned_instances)
@@ -238,8 +266,10 @@ class EC2ManagerApp:
 
     def _manual_refresh(self, e):
         """手动刷新"""
+
         async def manual_refresh_task():
             await self._load_all_regions(is_manual=True)
+
         self.page.run_task(manual_refresh_task)
 
     def _toggle_auto_refresh(self, e):
@@ -310,8 +340,8 @@ class EC2ManagerApp:
             self._log_message(self.t("log_start_sent", id=instance_id), "success")
 
             for inst in self.all_instances:
-                if inst['id'] == instance_id:
-                    inst['state'] = 'pending'
+                if inst["id"] == instance_id:
+                    inst["state"] = "pending"
             self._apply_filter()
 
         except Exception as e:
@@ -325,8 +355,8 @@ class EC2ManagerApp:
             self._log_message(self.t("log_stop_sent", id=instance_id), "success")
 
             for inst in self.all_instances:
-                if inst['id'] == instance_id:
-                    inst['state'] = 'stopping'
+                if inst["id"] == instance_id:
+                    inst["state"] = "stopping"
             self._apply_filter()
 
         except Exception as e:
@@ -350,13 +380,14 @@ class EC2ManagerApp:
 
             # 更新本地状态
             for inst in self.all_instances:
-                if inst['id'] == instance_id:
-                    inst['state'] = 'rebooting'
+                if inst["id"] == instance_id:
+                    inst["state"] = "rebooting"
             self._apply_filter()
 
             # 启动轮询任务
             async def poll_task():
                 await self._poll_instance_status(instance_id, region)
+
             self.page.run_task(poll_task)
 
     def _toggle_pin_instance(self, instance_id: str, is_pinned: bool):
@@ -393,33 +424,47 @@ class EC2ManagerApp:
 
             try:
                 status = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    partial(self._get_instance_status_sync, instance_id, region)
+                    None, partial(self._get_instance_status_sync, instance_id, region)
                 )
 
-                instance_state = status.get('instance_state', 'unknown')
-                system_status = status.get('system_status', 'unknown')
-                instance_status = status.get('instance_status', 'unknown')
+                instance_state = status.get("instance_state", "unknown")
+                system_status = status.get("system_status", "unknown")
+                instance_status = status.get("instance_status", "unknown")
 
-                if (instance_state == 'running' and
-                    system_status == 'ok' and
-                    instance_status == 'ok'):
+                if (
+                    instance_state == "running"
+                    and system_status == "ok"
+                    and instance_status == "ok"
+                ):
 
                     # 从重启跟踪集合中移除
                     self.rebooting_instances.discard(instance_id)
 
                     # 更新实例状态为运行中
                     for inst in self.all_instances:
-                        if inst['id'] == instance_id:
-                            inst['state'] = 'running'
+                        if inst["id"] == instance_id:
+                            inst["state"] = "running"
                     self._apply_filter()
-                    self._log_message(self.t("log_reboot_complete", id=instance_id, sys=system_status, inst=instance_status), "success")
+                    self._log_message(
+                        self.t(
+                            "log_reboot_complete",
+                            id=instance_id,
+                            sys=system_status,
+                            inst=instance_status,
+                        ),
+                        "success",
+                    )
                     return
 
                 if attempt % 3 == 0:
                     self._log_message(
-                        self.t("log_wait_reboot", state=instance_state, sys=system_status, inst=instance_status),
-                        "info"
+                        self.t(
+                            "log_wait_reboot",
+                            state=instance_state,
+                            sys=system_status,
+                            inst=instance_status,
+                        ),
+                        "info",
                     )
 
             except Exception as e:
@@ -433,6 +478,6 @@ class EC2ManagerApp:
 
         # 恢复为运行中状态
         for inst in self.all_instances:
-            if inst['id'] == instance_id and inst['state'] == 'rebooting':
-                inst['state'] = 'running'
+            if inst["id"] == instance_id and inst["state"] == "rebooting":
+                inst["state"] = "running"
         self._apply_filter()

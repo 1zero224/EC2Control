@@ -2,8 +2,8 @@
 本地文件缓存管理器
 负责实例数据和用户设置的持久化存储
 """
+
 import json
-from typing import List, Dict
 
 from src.config.settings import CACHE_DIR, CACHE_FILE, SETTINGS_FILE
 
@@ -17,11 +17,11 @@ class CacheManager:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def save_instances(instances: List[Dict]) -> bool:
+    def save_instances(instances: list[dict]) -> bool:
         """保存实例列表到缓存文件"""
         try:
             CacheManager.ensure_cache_dir()
-            with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            with open(CACHE_FILE, "w", encoding="utf-8") as f:
                 json.dump(instances, f, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
@@ -29,11 +29,11 @@ class CacheManager:
             return False
 
     @staticmethod
-    def load_instances() -> List[Dict]:
+    def load_instances() -> list[dict]:
         """从缓存文件加载实例列表"""
         try:
             if CACHE_FILE.exists():
-                with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                with open(CACHE_FILE, encoding="utf-8") as f:
                     instances = json.load(f)
                     if isinstance(instances, list):
                         return instances
@@ -42,11 +42,11 @@ class CacheManager:
         return []
 
     @staticmethod
-    def save_settings(settings: Dict) -> bool:
+    def save_settings(settings: dict) -> bool:
         """保存应用设置"""
         try:
             CacheManager.ensure_cache_dir()
-            with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
                 json.dump(settings, f, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
@@ -54,11 +54,11 @@ class CacheManager:
             return False
 
     @staticmethod
-    def load_settings() -> Dict:
+    def load_settings() -> dict:
         """加载应用设置"""
         try:
             if SETTINGS_FILE.exists():
-                with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
+                with open(SETTINGS_FILE, encoding="utf-8") as f:
                     settings = json.load(f)
                     if isinstance(settings, dict):
                         return settings

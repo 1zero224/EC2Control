@@ -1,9 +1,11 @@
 """
 控制台日志面板组件
 """
+
+from datetime import datetime
+
 import flet as ft
 from flet import Icons
-from datetime import datetime
 
 from src.config.constants import CONSOLE_MAX_LINES
 
@@ -30,15 +32,15 @@ class ConsolePanel:
             spacing=2,
             padding=10,
             auto_scroll=True,
+            expand=True,
         )
 
-        console_height = int(130 * self.font.scale)
         self.container = ft.Container(
             content=self.output,
             bgcolor=ft.Colors.with_opacity(0.95, ft.Colors.BLACK),
             border_radius=6,
             padding=0,
-            height=console_height,
+            expand=True,
             border=ft.border.all(1, ft.Colors.with_opacity(0.2, ft.Colors.WHITE)),
         )
 
@@ -47,7 +49,7 @@ class ConsolePanel:
             size=self.font.small,
             weight=ft.FontWeight.W_400,
             color=ft.Colors.WHITE70,
-            font_family="YaHei"
+            font_family="YaHei",
         )
 
         self.header = ft.Container(
@@ -65,7 +67,11 @@ class ConsolePanel:
 
     def get_control(self) -> ft.Column:
         """获取完整的控制台控件"""
-        return ft.Column([self.header, self.container], spacing=0)
+        return ft.Column(
+            [self.header, self.container],
+            spacing=0,
+            expand=True,  # 整个控制台区域自适应高度
+        )
 
     def log(self, message: str, level: str = "info"):
         """

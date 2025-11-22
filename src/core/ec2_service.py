@@ -2,13 +2,14 @@
 AWS EC2 实例管理服务层
 提供 EC2 实例的查询、启动和停止功能
 """
-from typing import List, Dict, Optional, Callable
+
+from collections.abc import Callable
 
 
 class EC2Service:
     """EC2 实例管理服务类"""
 
-    def __init__(self, region_name: Optional[str] = None):
+    def __init__(self, region_name: str | None = None):
         """
         初始化 EC2 服务
 
@@ -22,8 +23,8 @@ class EC2Service:
         try:
             # 获取默认区域
             session = boto3.Session()
-            self.default_region = region_name or session.region_name or 'us-east-1'
-            self.ec2_client = boto3.client('ec2', region_name=self.default_region)
+            self.default_region = region_name or session.region_name or "us-east-1"
+            self.ec2_client = boto3.client("ec2", region_name=self.default_region)
             self.region_name = self.default_region
             self.ec2_clients = {}  # 缓存多个区域的客户端
             self._available_regions = None  # 缓存可用区域列表
@@ -32,7 +33,7 @@ class EC2Service:
         except Exception as e:
             raise Exception(f"初始化 EC2 客户端失败: {str(e)}")
 
-    def get_available_regions(self) -> List[str]:
+    def get_available_regions(self) -> list[str]:
         """
         获取账户的所有可用区域列表（带缓存）
 
@@ -47,11 +48,11 @@ class EC2Service:
         try:
             # 使用 EC2 客户端获取所有区域
             response = self.ec2_client.describe_regions()
-            self._available_regions = [region['RegionName'] for region in response['Regions']]
+            self._available_regions = [region["RegionName"] for region in response["Regions"]]
             return self._available_regions
         except ClientError as e:
             # 如果获取失败，使用常用区域列表作为后备
-            error_msg = e.response['Error']['Message']
+            error_msg = e.response["Error"]["Message"]
             raise Exception(f"获取可用区域失败: {error_msg}")
         except Exception as e:
             raise Exception(f"获取可用区域时发生错误: {str(e)}")
@@ -61,10 +62,10 @@ class EC2Service:
         import boto3
 
         if region not in self.ec2_clients:
-            self.ec2_clients[region] = boto3.client('ec2', region_name=region)
+            self.ec2_clients[region] = boto3.client("ec2", region_name=region)
         return self.ec2_clients[region]
 
-    def list_instances_in_region(self, region: str) -> List[Dict[str, str]]:
+    def list_instances_in_region(self, region: str) -> list[dict[str, str]]:
         """获取指定区域的实例列表"""
         from botocore.exceptions import ClientError
 
@@ -73,32 +74,38 @@ class EC2Service:
             response = client.describe_instances()
             instances = []
 
-            for reservation in response['Reservations']:
-                for instance in reservation['Instances']:
+            for reservation in response["Reservations"]:
+                for instance in reservation["Instances"]:
                     # 提取实例名称
-                    name = 'N/A'
-                    if 'Tags' in instance:
-                        for tag in instance['Tags']:
-                            if tag['Key'] == 'Name':
-                                name = tag['Value']
+                    name = "N/A"
+                    if "Tags" in instance:
+                        for tag in instance["Tags"]:
+                            if tag["Key"] == "Name":
+                                name = tag["Value"]
                                 break
 
                     # 提取公网 IP
-                    public_ip = instance.get('PublicIpAddress', 'N/A')
+                    public_ip = instance.get("PublicIpAddress", "N/A")
 
                     # 提取私有 IP
-                    private_ip = instance.get('PrivateIpAddress', 'N/A')
+                    private_ip = instance.get("PrivateIpAddress", "N/A")
 
-                    instances.append({
-                        'id': instance['InstanceId'],
-                        'name': name,
-                        'state': instance['State']['Name'],
-                        'type': instance['InstanceType'],
-                        'public_ip': public_ip,
-                        'private_ip': private_ip,
-                        'region': region,  # 添加区域信息
-                        'launch_time': instance.get('LaunchTime', '').strftime('%Y-%m-%d %H:%M:%S') if instance.get('LaunchTime') else 'N/A'
-                    })
+                    instances.append(
+                        {
+                            "id": instance["InstanceId"],
+                            "name": name,
+                            "state": instance["State"]["Name"],
+                            "type": instance["InstanceType"],
+                            "public_ip": public_ip,
+                            "private_ip": private_ip,
+                            "region": region,  # 添加区域信息
+                            "launch_time": (
+                                instance.get("LaunchTime", "").strftime("%Y-%m-%d %H:%M:%S")
+                                if instance.get("LaunchTime")
+                                else "N/A"
+                            ),
+                        }
+                    )
 
             return instances
         except ClientError:
@@ -107,7 +114,7 @@ class EC2Service:
         except Exception:
             return []
 
-    def list_instances(self) -> List[Dict[str, str]]:
+    def list_instances(self) -> list[dict[str, str]]:
         """
         获取当前区域的 EC2 实例列表
 
@@ -116,7 +123,9 @@ class EC2Service:
         """
         return self.list_instances_in_region(self.region_name)
 
-    def list_all_instances(self, progress_callback: Optional[Callable[[str, int, int], None]] = None) -> List[Dict[str, str]]:
+    def list_all_instances(
+        self, progress_callback: Callable[[str, int, int], None] | None = None
+    ) -> list[dict[str, str]]:
         """
         并行获取所有区域的实例列表
 
@@ -177,7 +186,7 @@ class EC2Service:
             client.start_instances(InstanceIds=[instance_id])
             return True
         except ClientError as e:
-            error_msg = e.response['Error']['Message']
+            error_msg = e.response["Error"]["Message"]
             raise Exception(f"启动实例 {instance_id} 失败: {error_msg}")
         except Exception as e:
             raise Exception(f"启动实例时发生错误: {str(e)}")
@@ -200,7 +209,7 @@ class EC2Service:
             client.stop_instances(InstanceIds=[instance_id])
             return True
         except ClientError as e:
-            error_msg = e.response['Error']['Message']
+            error_msg = e.response["Error"]["Message"]
             raise Exception(f"停止实例 {instance_id} 失败: {error_msg}")
         except Exception as e:
             raise Exception(f"停止实例时发生错误: {str(e)}")
@@ -223,12 +232,12 @@ class EC2Service:
             client.reboot_instances(InstanceIds=[instance_id])
             return True
         except ClientError as e:
-            error_msg = e.response['Error']['Message']
+            error_msg = e.response["Error"]["Message"]
             raise Exception(f"重启实例 {instance_id} 失败: {error_msg}")
         except Exception as e:
             raise Exception(f"重启实例时发生错误: {str(e)}")
 
-    def get_instance_state(self, instance_id: str) -> Optional[str]:
+    def get_instance_state(self, instance_id: str) -> str | None:
         """
         获取实例当前状态
 
@@ -240,14 +249,14 @@ class EC2Service:
         """
         try:
             response = self.ec2_client.describe_instances(InstanceIds=[instance_id])
-            if response['Reservations']:
-                instance = response['Reservations'][0]['Instances'][0]
-                return instance['State']['Name']
+            if response["Reservations"]:
+                instance = response["Reservations"][0]["Instances"][0]
+                return instance["State"]["Name"]
             return None
         except Exception as e:
             raise Exception(f"获取实例状态失败: {str(e)}")
 
-    def get_instance_status_checks(self, instance_id: str, region: str) -> Dict[str, str]:
+    def get_instance_status_checks(self, instance_id: str, region: str) -> dict[str, str]:
         """
         获取实例的健康检查状态
 
@@ -264,22 +273,22 @@ class EC2Service:
             client = self.get_client_for_region(region)
             response = client.describe_instance_status(InstanceIds=[instance_id])
 
-            if response['InstanceStatuses']:
-                status = response['InstanceStatuses'][0]
+            if response["InstanceStatuses"]:
+                status = response["InstanceStatuses"][0]
                 return {
-                    'instance_state': status['InstanceState']['Name'],
-                    'system_status': status['SystemStatus']['Status'],
-                    'instance_status': status['InstanceStatus']['Status'],
+                    "instance_state": status["InstanceState"]["Name"],
+                    "system_status": status["SystemStatus"]["Status"],
+                    "instance_status": status["InstanceStatus"]["Status"],
                 }
             else:
                 # 实例可能处于停止状态，没有状态检查信息
                 return {
-                    'instance_state': 'unknown',
-                    'system_status': 'unknown',
-                    'instance_status': 'unknown',
+                    "instance_state": "unknown",
+                    "system_status": "unknown",
+                    "instance_status": "unknown",
                 }
         except ClientError as e:
-            error_msg = e.response['Error']['Message']
+            error_msg = e.response["Error"]["Message"]
             raise Exception(f"获取实例状态检查失败: {error_msg}")
         except Exception as e:
             raise Exception(f"获取实例状态检查时发生错误: {str(e)}")

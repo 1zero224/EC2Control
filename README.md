@@ -1,4 +1,4 @@
-# EC2 Control
+# EC2Control
 
 <p align="center">
   <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
@@ -9,14 +9,19 @@
 </p>
 
 <p align="center">
-<img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-<img src="https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white" />
-<img src="https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
-<img src="https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
-<img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+  <a href="./README_EN.md">English</a> | <strong>简体中文</strong>
 </p>
 
----
+<p align="center">
+<img src="https://github.com/1zero224/EC2Control/actions/workflows/build.yml/badge.svg" alt="Build Status"/>
+<img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+<img src="https://img.shields.io/badge/Flet-0.23.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flet"/>
+<img src="https://img.shields.io/badge/AWS-EC2-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS"/>
+<img src="https://img.shields.io/badge/Boto3-1.26.0+-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="Boto3"/>
+<img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"/>
+</p>
+
+
 
 ## 功能特性
 
@@ -33,7 +38,7 @@
 
 ### 1. 下载应用
 
-前往 [Releases](https://github.com/your-repo/aws-ec2-gui/releases) 页面下载最新版本的 `EC2Manager.exe` 文件
+前往 [Releases](https://github.com/1zero224/EC2Control/releases) 页面下载最新版本的 `EC2Manager.exe` 文件
 
 ### 2. 安装 AWS CLI
 
@@ -104,9 +109,9 @@ Default output format [None]: json
 
 双击 `EC2Manager.exe` 即可使用
 
----
 
-## 开发应用
+
+## 开发
 
 ### 安装依赖
 
@@ -120,43 +125,73 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### 打包应用
+
+```bash
+flet pack main.py --name "EC2Control" --icon "assets/icon.ico" --product-name "EC2Control"
+```
+
+打包完成后，可执行文件将生成在 `dist` 目录中。
+
+> **代码质量：** 项目使用 Ruff、Black 和 isort 进行代码检查，配置见 `pyproject.toml`。CI 会自动运行检查。
+
 ### 项目结构
 
 ```
 aws_ec2_gui/
+│
+├── .github/                     # GitHub 配置
+│   └── workflows/               # GitHub Actions 工作流
+│       ├── build.yml            # 构建和代码质量检查
+│       └── release.yml          # 自动发布
 │
 ├── assets/                      # 静态资源
 │   ├── logo.png                 # Logo
 │   └── icon.ico                 # 图标
 │
 ├── src/                         # 源代码
-│   ├── config/                  # 配置
+│   ├── config/                  # 配置模块
+│   │   ├── __init__.py
 │   │   ├── constants.py         # 常量定义
 │   │   └── settings.py          # 设置管理
 │   │
-│   ├── core/                    # 核心逻辑
-│   │   ├── ec2_service.py       # EC2 服务
+│   ├── core/                    # 核心业务逻辑
+│   │   ├── __init__.py
+│   │   ├── ec2_service.py       # EC2 服务封装
 │   │   └── cache_manager.py     # 缓存管理
 │   │
-│   ├── ui/                      # 界面
-│   │   ├── app.py               # 主应用
+│   ├── ui/                      # 用户界面
+│   │   ├── __init__.py
+│   │   ├── app.py               # 主应用界面
 │   │   ├── components/          # UI 组件
-│   │   └── themes/              # 主题和语言
+│   │   │   ├── __init__.py
+│   │   │   ├── toolbar.py       # 工具栏
+│   │   │   ├── instance_table.py # 实例表格
+│   │   │   └── console.py       # 控制台输出
+│   │   └── themes/              # 主题系统
+│   │       ├── __init__.py
+│   │       ├── i18n.py          # 国际化
+│   │       └── font_scale.py    # 字体缩放
 │   │
-│   ├── utils/                   # 工具
-│   └── main.py                  # 入口
+│   ├── utils/                   # 工具函数
+│   │   ├── __init__.py
+│   │   └── screen_utils.py      # 屏幕工具
+│   │
+│   └── main.py                  # 应用入口
 │
 ├── main.py                      # 启动脚本
-└── requirements.txt             # 依赖列表
+├── requirements.txt             # 项目依赖
+├── pyproject.toml               # 项目配置
+├── README.md                    # 中文文档
+└── README_EN.md                 # 英文文档
 ```
 
----
+
 
 ## 贡献
 
-欢迎提交 Issue 或 Pull Request！
+欢迎提交 Issue 报告和 Pull Request —— 我们感谢所有形式的贡献。
 
----
 
 ## 许可证
 

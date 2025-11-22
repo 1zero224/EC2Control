@@ -3,8 +3,24 @@ name: Build and Package
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.editorconfig'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.editorconfig'
   workflow_dispatch:
 
 jobs:
@@ -45,7 +61,7 @@ jobs:
             $MINOR = 0
           }
 
-          echo "📌 最近版本: $LATEST_TAG ($MAJOR.$MINOR)"
+          echo "最近版本: $LATEST_TAG ($MAJOR.$MINOR)"
 
           # 检查当前 commit 是否有 tag（已发布版本）
           $CURRENT_TAG = git describe --exact-match --tags 2>$null
@@ -86,22 +102,22 @@ jobs:
               # BREAKING CHANGE -> Major 版本递增
               $MAJOR += 1
               $MINOR = 0
-              echo "🔥 检测到 BREAKING CHANGE -> MAJOR 版本递增"
+              echo "检测到 BREAKING CHANGE -> MAJOR 版本递增"
             } elseif ($HAS_FEAT) {
               # 新功能 -> Minor 版本递增
               $MINOR += 1
-              echo "✨ 检测到新功能 -> MINOR 版本递增"
+              echo "检测到新功能 -> MINOR 版本递增"
             } else {
               # 其他变更（fix, chore, docs 等）-> Minor 版本递增
               $MINOR += 1
-              echo "📦 其他变更 -> MINOR 版本递增"
+              echo "其他变更 -> MINOR 版本递增"
             }
 
             $COMMIT_COUNT = ($COMMITS | Measure-Object).Count
             $COMMIT_HASH = git rev-parse --short HEAD
             $VERSION = "$MAJOR.$MINOR-dev.$COMMIT_COUNT+$COMMIT_HASH"
             $IS_RELEASE = "false"
-            echo "⚙ 开发版本: $VERSION"
+            echo "开发版本: $VERSION"
           }
 
           echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
@@ -114,12 +130,34 @@ jobs:
           pip install -r requirements.txt
           pip install flet
 
+      - name: Install code quality tools
+        run: |
+          pip install ruff black isort
+
+      - name: Code quality - Ruff lint
+        run: |
+          echo "运行 Ruff 语法检查..."
+          ruff check src/ main.py --output-format=github
+        continue-on-error: false
+
+      - name: Code quality - Black format check
+        run: |
+          echo "检查代码格式 (Black)..."
+          black --check src/ main.py --diff
+        continue-on-error: true
+
+      - name: Code quality - Import sorting check
+        run: |
+          echo "检查导入排序 (isort)..."
+          isort --check-only src/ main.py --diff
+        continue-on-error: true
+
       - name: Build with Flet
         run: |
           flet pack main.py `
-            --name "EC2 Control" `
+            --name "EC2Control" `
             --icon "assets/icon.ico" `
-            --product-name "EC2 Control" `
+            --product-name "EC2Control" `
             --product-version "${{ steps.semver.outputs.VERSION }}" `
             --copyright "Copyright (c) 2025 1zero" `
             --distpath dist
@@ -131,11 +169,11 @@ jobs:
       - name: Archive build artifacts
         run: |
           cd dist
-          7z a -tzip "../EC2-Control-Windows.zip" "EC2 Control.exe"
+          7z a -tzip "../EC2Control-Windows.zip" "EC2Control.exe"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: EC2-Control-Windows
-          path: EC2-Control-Windows.zip
+          name: EC2Control-Windows
+          path: EC2Control-Windows.zip
           retention-days: 30

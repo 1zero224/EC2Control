@@ -2,11 +2,11 @@
 屏幕分辨率检测工具
 跨平台获取真实屏幕分辨率
 """
+
 import sys
-from typing import Tuple
 
 
-def get_screen_resolution() -> Tuple[int, int]:
+def get_screen_resolution() -> tuple[int, int]:
     """
     获取主显示器的真实分辨率
 
@@ -14,9 +14,10 @@ def get_screen_resolution() -> Tuple[int, int]:
         (width, height) 屏幕分辨率元组
     """
     try:
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             # Windows 平台
             import ctypes
+
             user32 = ctypes.windll.user32
             # 获取主显示器分辨率（考虑 DPI 缩放）
             user32.SetProcessDPIAware()

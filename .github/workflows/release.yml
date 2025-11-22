@@ -52,10 +52,10 @@ jobs:
           $PREV_TAG = git describe --tags --abbrev=0 "$CURRENT_TAG^" 2>$null
 
           if ($PREV_TAG) {
-            echo "📊 变更范围: $PREV_TAG...$CURRENT_TAG"
+            echo "变更范围: $PREV_TAG...$CURRENT_TAG"
             $COMMITS = git log "$PREV_TAG..$CURRENT_TAG" --pretty=format:"%s|||%h|||%an" --no-merges
           } else {
-            echo "📊 首次发布，包含所有提交"
+            echo "首次发布，包含所有提交"
             $COMMITS = git log --pretty=format:"%s|||%h|||%an" --no-merges
           }
 
@@ -92,22 +92,22 @@ jobs:
           $CHANGELOG = ""
 
           if ($BREAKING.Count -gt 0) {
-            $CHANGELOG += "### 🔥 破坏性变更`n`n"
+            $CHANGELOG += "### 破坏性变更`n`n"
             $CHANGELOG += ($BREAKING -join "`n") + "`n`n"
           }
 
           if ($FEATURES.Count -gt 0) {
-            $CHANGELOG += "### ✨ 新功能`n`n"
+            $CHANGELOG += "### 新功能`n`n"
             $CHANGELOG += ($FEATURES -join "`n") + "`n`n"
           }
 
           if ($FIXES.Count -gt 0) {
-            $CHANGELOG += "### 🐛 Bug 修复`n`n"
+            $CHANGELOG += "### Bug 修复`n`n"
             $CHANGELOG += ($FIXES -join "`n") + "`n`n"
           }
 
           if ($OTHERS.Count -gt 0) {
-            $CHANGELOG += "### 📦 其他变更`n`n"
+            $CHANGELOG += "### 其他变更`n`n"
             $CHANGELOG += ($OTHERS -join "`n") + "`n`n"
           }
 
@@ -115,7 +115,7 @@ jobs:
           $CHANGELOG | Out-File -FilePath changelog.md -Encoding utf8
 
           # 显示统计
-          echo "📈 统计: Breaking=$($BREAKING.Count), Features=$($FEATURES.Count), Fixes=$($FIXES.Count), Others=$($OTHERS.Count)"
+          echo "统计: Breaking=$($BREAKING.Count), Features=$($FEATURES.Count), Fixes=$($FIXES.Count), Others=$($OTHERS.Count)"
 
       - name: Install dependencies
         run: |
@@ -126,9 +126,9 @@ jobs:
       - name: Build with Flet
         run: |
           flet pack main.py `
-            --name "EC2 Control" `
+            --name "EC2Control" `
             --icon "assets/icon.ico" `
-            --product-name "EC2 Control" `
+            --product-name "EC2Control" `
             --product-version "${{ steps.version.outputs.VERSION }}" `
             --copyright "Copyright (c) 2025 1zero" `
             --distpath dist
@@ -137,11 +137,10 @@ jobs:
         run: |
           dir dist
 
-      - name: Create release archive
+      - name: Rename executable
         run: |
-          cd dist
           $VERSION = "${{ steps.version.outputs.VERSION }}"
-          7z a -tzip "../EC2-Control-v$VERSION-Windows.zip" "EC2 Control.exe"
+          Move-Item "dist/EC2Control.exe" "dist/EC2Control-v$VERSION-Windows.exe"
 
       - name: Generate release notes
         run: |
@@ -150,24 +149,15 @@ jobs:
           $CHANGELOG = Get-Content changelog.md -Raw
 
           $NOTES = @"
-          ## EC2 Control v$VERSION
+          ## EC2Control v$VERSION
 
-          ### 📦 下载
-          - [EC2-Control-v$VERSION-Windows.zip](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2-Control-v$VERSION-Windows.zip)
+          ### 下载
+          - **Windows:** [EC2Control-v$VERSION-Windows.exe](https://github.com/${{ github.repository }}/releases/download/$TAG/EC2Control-v$VERSION-Windows.exe)
+          - **源代码:** 见下方 Assets 中的 Source code (zip/tar.gz)
 
           ---
 
           $CHANGELOG
-
-          ---
-
-          ### 📝 安装说明
-          1. 下载 ``EC2-Control-v$VERSION-Windows.zip``
-          2. 解压到任意目录
-          3. 运行 ``EC2 Control.exe``
-
-          **系统要求:** Windows 10/11 (64-bit)
-          "@
 
           $NOTES | Out-File -FilePath release_notes.md -Encoding utf8
 
@@ -175,11 +165,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.TAG }}
-          name: EC2 Control v${{ steps.version.outputs.VERSION }}
+          name: EC2Control v${{ steps.version.outputs.VERSION }}
           body_path: release_notes.md
           files: |
-            EC2-Control-v${{ steps.version.outputs.VERSION }}-Windows.zip
+            dist/EC2Control-v${{ steps.version.outputs.VERSION }}-Windows.exe
           draft: false
           prerelease: false
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
