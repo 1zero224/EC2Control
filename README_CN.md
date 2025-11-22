@@ -2,7 +2,7 @@
 
 # EC2Control
 
-![EC2 Control Logo](assets/logo.png){ width=200px }
+<img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
 
 一个便捷的 EC2 实例启停小工具
 
