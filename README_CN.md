@@ -4,7 +4,7 @@
 
 <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
 
-一个便捷的 EC2 实例启停小工具
+一个便捷的 EC2 实例启停/重启小工具
 
 [English](./README_EN.md) | **简体中文**
 

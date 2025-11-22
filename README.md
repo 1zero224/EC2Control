@@ -4,7 +4,7 @@
 
 <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
 
-A convenient tool for managing EC2 instance start/stop operations
+A convenient tool for managing EC2 instance start/stop/restart operations
 
 **English** | [简体中文](./README_CN.md)
 
