@@ -1,0 +1,22 @@
+"""
+应用常量定义
+"""
+
+# 字体配置
+FONT_FAMILY = "Microsoft YaHei"
+MONO_FONT = "Consolas"
+
+# 窗口默认尺寸
+DEFAULT_WINDOW_WIDTH = 1300
+DEFAULT_WINDOW_HEIGHT = 750
+DEFAULT_PADDING = 20
+
+# 自动刷新间隔（秒）
+AUTO_REFRESH_INTERVAL = 30
+
+# 控制台最大日志条数
+CONSOLE_MAX_LINES = 100
+
+# 重启轮询配置
+REBOOT_POLL_MAX_ATTEMPTS = 60
+REBOOT_POLL_INTERVAL = 5

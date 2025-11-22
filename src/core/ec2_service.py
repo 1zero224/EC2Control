@@ -11,13 +11,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 class EC2Service:
     """EC2 实例管理服务类"""
 
-    # 常用 AWS 区域列表
-    COMMON_REGIONS = [
-        'us-east-1', 'us-west-2',
-        'ap-southeast-1', 'ap-northeast-1', 'ap-northeast-2', 'ap-south-1',
-        'eu-west-1', 'eu-central-1',
-    ]
-
     def __init__(self, region_name: Optional[str] = None):
         """
         初始化 EC2 服务
@@ -32,10 +25,33 @@ class EC2Service:
             self.ec2_client = boto3.client('ec2', region_name=self.default_region)
             self.region_name = self.default_region
             self.ec2_clients = {}  # 缓存多个区域的客户端
+            self._available_regions = None  # 缓存可用区域列表
         except NoCredentialsError:
             raise Exception("未找到 AWS 凭证，请配置 AWS credentials")
         except Exception as e:
             raise Exception(f"初始化 EC2 客户端失败: {str(e)}")
+
+    def get_available_regions(self) -> List[str]:
+        """
+        获取账户的所有可用区域列表（带缓存）
+
+        Returns:
+            可用区域名称列表
+        """
+        if self._available_regions is not None:
+            return self._available_regions
+
+        try:
+            # 使用 EC2 客户端获取所有区域
+            response = self.ec2_client.describe_regions()
+            self._available_regions = [region['RegionName'] for region in response['Regions']]
+            return self._available_regions
+        except ClientError as e:
+            # 如果获取失败，使用常用区域列表作为后备
+            error_msg = e.response['Error']['Message']
+            raise Exception(f"获取可用区域失败: {error_msg}")
+        except Exception as e:
+            raise Exception(f"获取可用区域时发生错误: {str(e)}")
 
     def get_client_for_region(self, region: str):
         """获取指定区域的 EC2 客户端（带缓存）"""
@@ -78,10 +94,10 @@ class EC2Service:
                     })
 
             return instances
-        except ClientError as e:
+        except ClientError:
             # 某些区域可能无权限访问，返回空列表而不抛出异常
             return []
-        except Exception as e:
+        except Exception:
             return []
 
     def list_instances(self) -> List[Dict[str, str]]:
@@ -103,13 +119,20 @@ class EC2Service:
         Returns:
             所有区域的实例列表
         """
-        all_instances = []
-        total_regions = len(self.COMMON_REGIONS)
+        # 动态获取账户的所有可用区域
+        try:
+            available_regions = self.get_available_regions()
+        except Exception:
+            # 如果获取区域失败，返回空列表
+            return []
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        all_instances = []
+        total_regions = len(available_regions)
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
             future_to_region = {
                 executor.submit(self.list_instances_in_region, region): region
-                for region in self.COMMON_REGIONS
+                for region in available_regions
             }
 
             completed = 0
@@ -122,6 +145,7 @@ class EC2Service:
                     if progress_callback:
                         progress_callback(region, completed, total_regions)
                 except Exception:
+                    # 忽略单个区域的错误，继续处理其他区域
                     pass
 
         return all_instances

@@ -17,14 +17,39 @@
 
 ```
 aws_ec2_gui/
-├── main.py              # GUI 主程序（包含自适应字体系统）
-├── ec2_service.py       # EC2 服务层（多区域支持）
-├── screen_utils.py      # 屏幕分辨率检测工具
-├── requirements.txt     # Python 依赖
-├── .env.example         # 环境变量配置示例
-├── .gitignore          # Git 忽略规则
-├── run.bat             # Windows 快速启动脚本
-└── README.md           # 项目说明文档
+├── main.py                      # 应用程序入口
+├── src/                         # 源代码目录
+│   ├── __init__.py
+│   ├── main.py                  # 备用入口
+│   ├── config/                  # 配置模块
+│   │   ├── __init__.py
+│   │   ├── constants.py         # 常量定义
+│   │   └── settings.py          # 应用设置路径
+│   ├── core/                    # 核心业务逻辑层
+│   │   ├── __init__.py
+│   │   ├── ec2_service.py       # EC2 服务封装
+│   │   └── cache_manager.py     # 缓存管理器
+│   ├── ui/                      # UI层
+│   │   ├── __init__.py
+│   │   ├── app.py               # 应用主界面
+│   │   ├── components/          # UI组件
+│   │   │   ├── __init__.py
+│   │   │   ├── console.py       # 控制台组件
+│   │   │   ├── instance_table.py # 实例表格组件
+│   │   │   └── toolbar.py       # 工具栏组件
+│   │   └── themes/              # 主题配置
+│   │       ├── __init__.py
+│   │       ├── font_scale.py    # 字体缩放系统
+│   │       └── i18n.py          # 国际化配置
+│   └── utils/                   # 工具类
+│       ├── __init__.py
+│       └── screen_utils.py      # 屏幕检测工具
+├── assets/                      # 资源文件
+│   └── icon.ico                 # 应用图标
+├── requirements.txt             # Python 依赖
+├── .env.example                 # 环境变量配置示例
+├── .gitignore                   # Git 忽略规则
+└── README.md                    # 项目说明文档
 ```
 
 ## 技术栈
