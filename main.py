@@ -7,6 +7,7 @@ from flet import Icons
 from ec2_service import EC2Service
 from screen_utils import get_screen_resolution
 import asyncio
+from functools import partial
 from datetime import datetime
 from typing import List, Dict
 
@@ -251,7 +252,7 @@ class EC2ManagerApp:
                     ft.Text(
                         "控制台输出",
                         size=self.font.small,
-                        weight=ft.FontWeight.W_500,
+                        weight=ft.FontWeight.W_400,
                         color=ft.Colors.WHITE70,
                         font_family="YaHei"
                     ),
@@ -304,14 +305,21 @@ class EC2ManagerApp:
                     f"[{timestamp}]",
                     size=self.font.console,
                     color=ft.Colors.WHITE54,
-                    font_family="Consolas"
+                    font_family="Consolas",
+                    selectable=True,
                 ),
-                ft.Text(prefix, size=self.font.console, color=color),
+                ft.Text(
+                    prefix,
+                    size=self.font.console,
+                    color=color,
+                    selectable=True,
+                ),
                 ft.Text(
                     message,
                     size=self.font.console,
                     color=color,
-                    font_family="Consolas"
+                    font_family="Consolas",
+                    selectable=True,
                 ),
             ],
             spacing=8,
@@ -350,19 +358,14 @@ class EC2ManagerApp:
             return
 
         self.is_loading = True
-        self.log_message("正在扫描所有 AWS 区域...", "info")
-
-        def progress_callback(region, current, total):
-            self.log_message(f"正在扫描 {region} ({current}/{total})", "info")
 
         try:
             instances = await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda: self.ec2_service.list_all_instances(progress_callback)
+                lambda: self.ec2_service.list_all_instances()
             )
 
             self.all_instances = instances
-            self.log_message(f"扫描完成，共找到 {len(instances)} 个实例", "success")
 
             # 更新区域筛选选项
             self.update_region_filter_options()
@@ -424,38 +427,44 @@ class EC2ManagerApp:
                         instance['region'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
-                        font_family="Consolas"
+                        font_family="Consolas",
+                        selectable=True
                     )),
                     ft.DataCell(ft.Text(
                         instance['name'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_500,
-                        font_family="YaHei"
+                        font_family="YaHei",
+                        selectable=True
                     )),
                     ft.DataCell(ft.Text(
                         instance['id'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
-                        font_family="Consolas"
+                        font_family="Consolas",
+                        selectable=True
                     )),
                     ft.DataCell(state_badge),
                     ft.DataCell(ft.Text(
                         instance['type'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
-                        font_family="YaHei"
+                        font_family="YaHei",
+                        selectable=True
                     )),
                     ft.DataCell(ft.Text(
                         instance['public_ip'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
-                        font_family="Consolas"
+                        font_family="Consolas",
+                        selectable=True
                     )),
                     ft.DataCell(ft.Text(
                         instance['private_ip'],
                         size=self.font.table_cell,
                         weight=ft.FontWeight.W_400,
-                        font_family="Consolas"
+                        font_family="Consolas",
+                        selectable=True
                     )),
                     ft.DataCell(action_button),
                 ]
@@ -467,11 +476,12 @@ class EC2ManagerApp:
     def create_state_badge(self, state: str):
         """创建状态徽章"""
         style_map = {
-            'running': {"bg": ft.Colors.GREEN_800, "text": ft.Colors.GREEN_100, "label": "运行中"},
-            'stopped': {"bg": ft.Colors.RED_800, "text": ft.Colors.RED_100, "label": "已停止"},
-            'pending': {"bg": ft.Colors.AMBER_800, "text": ft.Colors.AMBER_100, "label": "启动中"},
-            'stopping': {"bg": ft.Colors.ORANGE_800, "text": ft.Colors.ORANGE_100, "label": "停止中"},
-            'terminated': {"bg": ft.Colors.GREY_700, "text": ft.Colors.GREY_300, "label": "已终止"},
+            'running': {"bg": ft.Colors.GREEN_800, "text": ft.Colors.WHITE, "label": "运行中"},
+            'stopped': {"bg": ft.Colors.RED_800, "text": ft.Colors.WHITE, "label": "已停止"},
+            'pending': {"bg": ft.Colors.AMBER_800, "text": ft.Colors.WHITE, "label": "启动中"},
+            'stopping': {"bg": ft.Colors.ORANGE_800, "text": ft.Colors.WHITE, "label": "停止中"},
+            'rebooting': {"bg": ft.Colors.BLUE_800, "text": ft.Colors.WHITE, "label": "重启中"},
+            'terminated': {"bg": ft.Colors.GREY_700, "text": ft.Colors.WHITE, "label": "已终止"},
         }
 
         style = style_map.get(state, {"bg": ft.Colors.GREY_700, "text": ft.Colors.GREY_300, "label": state})
@@ -495,50 +505,111 @@ class EC2ManagerApp:
         )
 
     def create_action_button(self, instance):
-        """创建操作按钮 - 只显示启动或停止"""
+        """创建操作按钮 - 启动/停止/重启，固定宽度容器"""
         instance_id = instance['id']
         region = instance['region']
         state = instance['state']
 
         icon_size = self.font.icon_medium
+        # 固定操作列宽度，容纳两个按钮
+        action_width = int(80 * self.font.scale)
 
         if state in ['stopped', 'terminated']:
-            return ft.IconButton(
-                icon=Icons.PLAY_ARROW_ROUNDED,
-                icon_color=ft.Colors.GREEN_400,
-                icon_size=icon_size,
-                tooltip="启动实例",
-                disabled=(state == 'terminated'),
-                on_click=lambda e, iid=instance_id, r=region: self.start_instance(iid, r),
-                style=ft.ButtonStyle(
-                    shape=ft.CircleBorder(),
-                    padding=int(8 * self.font.scale)
-                ),
+            # 使用 Row 包裹单个按钮，并左对齐，确保与停止按钮列对齐
+            content = ft.Row(
+                [
+                    ft.IconButton(
+                        icon=Icons.PLAY_ARROW_ROUNDED,
+                        icon_color=ft.Colors.GREEN_400,
+                        icon_size=icon_size,
+                        tooltip="启动实例",
+                        disabled=(state == 'terminated'),
+                        on_click=lambda e, iid=instance_id, r=region: self.start_instance(iid, r),
+                        style=ft.ButtonStyle(
+                            shape=ft.CircleBorder(),
+                            padding=int(8 * self.font.scale)
+                        ),
+                    ),
+                ],
+                spacing=0,
+                tight=True,
+                alignment=ft.MainAxisAlignment.START,
             )
-        elif state in ['running', 'pending']:
-            return ft.IconButton(
-                icon=Icons.STOP_ROUNDED,
-                icon_color=ft.Colors.RED_400,
-                icon_size=icon_size,
-                tooltip="停止实例",
-                disabled=(state == 'pending'),
-                on_click=lambda e, iid=instance_id, r=region: self.stop_instance(iid, r),
-                style=ft.ButtonStyle(
-                    shape=ft.CircleBorder(),
-                    padding=int(8 * self.font.scale)
-                ),
+        elif state == 'running':
+            # running 状态显示停止和重启按钮
+            content = ft.Row(
+                [
+                    ft.IconButton(
+                        icon=Icons.STOP_ROUNDED,
+                        icon_color=ft.Colors.RED_400,
+                        icon_size=icon_size,
+                        tooltip="停止实例",
+                        on_click=lambda e, iid=instance_id, r=region: self.stop_instance(iid, r),
+                        style=ft.ButtonStyle(
+                            shape=ft.CircleBorder(),
+                            padding=int(8 * self.font.scale)
+                        ),
+                    ),
+                    ft.IconButton(
+                        icon=Icons.RESTART_ALT_ROUNDED,
+                        icon_color=ft.Colors.ORANGE_400,
+                        icon_size=icon_size,
+                        tooltip="重启实例",
+                        on_click=lambda e, iid=instance_id, r=region: self.reboot_instance(iid, r),
+                        style=ft.ButtonStyle(
+                            shape=ft.CircleBorder(),
+                            padding=int(8 * self.font.scale)
+                        ),
+                    ),
+                ],
+                spacing=0,
+                tight=True,
+            )
+        elif state in ['pending', 'rebooting']:
+            # 使用 Row 包裹单个按钮，并左对齐
+            content = ft.Row(
+                [
+                    ft.IconButton(
+                        icon=Icons.HOURGLASS_EMPTY if state == 'rebooting' else Icons.STOP_ROUNDED,
+                        icon_color=ft.Colors.BLUE_400 if state == 'rebooting' else ft.Colors.RED_400,
+                        icon_size=icon_size,
+                        tooltip="重启中..." if state == 'rebooting' else "停止实例",
+                        disabled=True,
+                        style=ft.ButtonStyle(
+                            shape=ft.CircleBorder(),
+                            padding=int(8 * self.font.scale)
+                        ),
+                    ),
+                ],
+                spacing=0,
+                tight=True,
+                alignment=ft.MainAxisAlignment.START,
             )
         else:
-            return ft.IconButton(
-                icon=Icons.MORE_HORIZ,
-                icon_color=ft.Colors.GREY_500,
-                icon_size=icon_size,
-                disabled=True,
-                style=ft.ButtonStyle(
-                    shape=ft.CircleBorder(),
-                    padding=int(8 * self.font.scale)
-                ),
+            # 使用 Row 包裹单个按钮，并左对齐
+            content = ft.Row(
+                [
+                    ft.IconButton(
+                        icon=Icons.MORE_HORIZ,
+                        icon_color=ft.Colors.GREY_500,
+                        icon_size=icon_size,
+                        disabled=True,
+                        style=ft.ButtonStyle(
+                            shape=ft.CircleBorder(),
+                            padding=int(8 * self.font.scale)
+                        ),
+                    ),
+                ],
+                spacing=0,
+                tight=True,
+                alignment=ft.MainAxisAlignment.START,
             )
+
+        # 使用固定宽度容器包裹
+        return ft.Container(
+            content=content,
+            width=action_width,
+        )
 
     def start_instance(self, instance_id: str, region: str):
         """启动实例"""
@@ -570,6 +641,83 @@ class EC2ManagerApp:
         except Exception as e:
             self.log_message(f"停止失败: {str(e)}", "error")
 
+    def reboot_instance(self, instance_id: str, region: str):
+        """重启实例"""
+        reboot_success = False
+        try:
+            self.log_message(f"正在重启实例 {instance_id} ({region})...", "info")
+            self.ec2_service.reboot_instance(instance_id, region)
+            self.log_message(f"实例 {instance_id} 重启命令已发送", "success")
+            reboot_success = True
+        except Exception as e:
+            self.log_message(f"重启失败: {str(e)}", "error")
+            return
+
+        # 重启命令发送成功后，更新状态并启动轮询
+        if reboot_success:
+            # 临时设置为重启中状态
+            for inst in self.all_instances:
+                if inst['id'] == instance_id:
+                    inst['state'] = 'rebooting'
+            self.apply_filter()
+
+            # 启动轮询检查实例状态
+            async def poll_task():
+                await self.poll_instance_status(instance_id, region)
+            self.page.run_task(poll_task)
+
+    def _get_instance_status_sync(self, instance_id: str, region: str):
+        """同步获取实例状态（用于 run_in_executor）"""
+        return self.ec2_service.get_instance_status_checks(instance_id, region)
+
+    async def poll_instance_status(self, instance_id: str, region: str):
+        """轮询检查实例状态，直到重启完成"""
+        max_attempts = 60  # 最多轮询60次（约5分钟）
+        interval = 5  # 每5秒检查一次
+
+        for attempt in range(max_attempts):
+            await asyncio.sleep(interval)
+
+            try:
+                status = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    partial(self._get_instance_status_sync, instance_id, region)
+                )
+
+                instance_state = status.get('instance_state', 'unknown')
+                system_status = status.get('system_status', 'unknown')
+                instance_status = status.get('instance_status', 'unknown')
+
+                # 检查是否重启完成：实例运行中且两项健康检查都通过
+                if (instance_state == 'running' and
+                    system_status == 'ok' and
+                    instance_status == 'ok'):
+
+                    # 更新本地状态
+                    for inst in self.all_instances:
+                        if inst['id'] == instance_id:
+                            inst['state'] = 'running'
+                    self.apply_filter()
+                    self.log_message(f"实例 {instance_id} 重启完成 (系统检查: {system_status}, 实例检查: {instance_status})", "success")
+                    return
+
+                # 记录当前检查状态
+                if attempt % 3 == 0:  # 每15秒输出一次状态
+                    self.log_message(
+                        f"等待重启完成... (状态: {instance_state}, 系统: {system_status}, 实例: {instance_status})",
+                        "info"
+                    )
+
+            except Exception as e:
+                self.log_message(f"检查状态时出错: {str(e)}", "warning")
+
+        # 超时
+        self.log_message(f"实例 {instance_id} 重启状态检查超时，请手动刷新确认", "warning")
+        for inst in self.all_instances:
+            if inst['id'] == instance_id and inst['state'] == 'rebooting':
+                inst['state'] = 'running'
+        self.apply_filter()
+
     def manual_refresh(self, e):
         """手动刷新"""
         self.page.run_task(self.load_all_regions)
@@ -598,7 +746,6 @@ class EC2ManagerApp:
         while self.auto_refresh_switch.value:
             await asyncio.sleep(30)
             if self.auto_refresh_switch.value and not self.is_loading:
-                self.log_message("自动刷新中...", "info")
                 await self.load_all_regions()
 
 

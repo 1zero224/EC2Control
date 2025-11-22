@@ -29,9 +29,3 @@ def get_screen_resolution() -> Tuple[int, int]:
 
     # 默认返回常见分辨率
     return (1920, 1080)
-
-
-if __name__ == "__main__":
-    # 测试
-    width, height = get_screen_resolution()
-    print(f"屏幕分辨率: {width}x{height}")

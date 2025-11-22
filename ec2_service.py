@@ -168,6 +168,27 @@ class EC2Service:
         except Exception as e:
             raise Exception(f"停止实例时发生错误: {str(e)}")
 
+    def reboot_instance(self, instance_id: str, region: str) -> bool:
+        """
+        重启指定的 EC2 实例
+
+        Args:
+            instance_id: 实例 ID
+            region: 实例所在区域
+
+        Returns:
+            操作是否成功
+        """
+        try:
+            client = self.get_client_for_region(region)
+            client.reboot_instances(InstanceIds=[instance_id])
+            return True
+        except ClientError as e:
+            error_msg = e.response['Error']['Message']
+            raise Exception(f"重启实例 {instance_id} 失败: {error_msg}")
+        except Exception as e:
+            raise Exception(f"重启实例时发生错误: {str(e)}")
+
     def get_instance_state(self, instance_id: str) -> Optional[str]:
         """
         获取实例当前状态
@@ -186,3 +207,38 @@ class EC2Service:
             return None
         except Exception as e:
             raise Exception(f"获取实例状态失败: {str(e)}")
+
+    def get_instance_status_checks(self, instance_id: str, region: str) -> Dict[str, str]:
+        """
+        获取实例的健康检查状态
+
+        Args:
+            instance_id: 实例 ID
+            region: 实例所在区域
+
+        Returns:
+            包含 instance_state, system_status, instance_status 的字典
+        """
+        try:
+            client = self.get_client_for_region(region)
+            response = client.describe_instance_status(InstanceIds=[instance_id])
+
+            if response['InstanceStatuses']:
+                status = response['InstanceStatuses'][0]
+                return {
+                    'instance_state': status['InstanceState']['Name'],
+                    'system_status': status['SystemStatus']['Status'],
+                    'instance_status': status['InstanceStatus']['Status'],
+                }
+            else:
+                # 实例可能处于停止状态，没有状态检查信息
+                return {
+                    'instance_state': 'unknown',
+                    'system_status': 'unknown',
+                    'instance_status': 'unknown',
+                }
+        except ClientError as e:
+            error_msg = e.response['Error']['Message']
+            raise Exception(f"获取实例状态检查失败: {error_msg}")
+        except Exception as e:
+            raise Exception(f"获取实例状态检查时发生错误: {str(e)}")
