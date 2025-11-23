@@ -1,4 +1,5 @@
 <div align="center">
+
 # EC2Control
 
 <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
