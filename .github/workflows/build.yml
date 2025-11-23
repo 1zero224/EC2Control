@@ -3,24 +3,20 @@ name: Build and Package
 on:
   push:
     branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/**'
-      - '!.github/workflows/**'
-      - 'LICENSE'
-      - '.gitignore'
-      - '.editorconfig'
+    paths:
+      - 'src/**'
+      - 'main.py'
+      - 'requirements.txt'
+      - 'assets/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/**'
-      - '!.github/workflows/**'
-      - 'LICENSE'
-      - '.gitignore'
-      - '.editorconfig'
+    paths:
+      - 'src/**'
+      - 'main.py'
+      - 'requirements.txt'
+      - 'assets/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
