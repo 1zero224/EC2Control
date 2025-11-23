@@ -108,8 +108,24 @@ Double-click `EC2Control-vx.x-Windows.exe` to start using the application.
 
 ### Install Dependencies
 
+Main project dependencies:
+
+- **boto3** (>=1.26.0) - AWS SDK for Python
+- **flet** (>=0.23.0) - Cross-platform GUI framework
+- **pyinstaller** (>=5.13.0) - Packaging tool
+
+Install all dependencies:
+
 ```bash
 pip install -r requirements.txt
+```
+
+### Code Quality Tools (Optional)
+
+The project uses the following tools for code checking and formatting (development environment only):
+
+```bash
+pip install ruff black isort
 ```
 
 ### Run the Application

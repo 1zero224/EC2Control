@@ -109,8 +109,24 @@ Default output format [None]: json
 
 ### 安装依赖
 
+项目主要依赖：
+
+- **boto3** (>=1.26.0) - AWS SDK for Python
+- **flet** (>=0.23.0) - 跨平台 GUI 框架
+- **pyinstaller** (>=5.13.0) - 打包工具
+
+安装所有依赖：
+
 ```bash
 pip install -r requirements.txt
+```
+
+### 代码质量工具（可选）
+
+项目使用以下工具进行代码检查和格式化（可选）：
+
+```bash
+pip install ruff black isort
 ```
 
 ### 运行应用
