@@ -33,7 +33,7 @@
 
 ### 1. 下载应用
 
-前往 [Releases](https://github.com/1zero224/EC2Control/releases) 页面下载最新版本的 `EC2Manager.exe` 文件
+前往 [Releases](https://github.com/1zero224/EC2Control/releases) 页面下载最新版本的 `EC2Control-vx.x-Windows.exe` 文件
 
 ### 2. 安装 AWS CLI
 
@@ -102,7 +102,7 @@ Default output format [None]: json
 
 ### 5. 启动应用
 
-双击 `EC2Manager.exe` 即可使用
+双击 `EC2Control-vx.x-Windows.exe` 即可使用
 
 
 ## 开发指南

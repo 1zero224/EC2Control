@@ -159,6 +159,7 @@ jobs:
             --icon "assets/icon.ico" `
             --product-name "EC2Control" `
             --product-version "${{ steps.semver.outputs.VERSION }}" `
+            --file-version "${{ steps.semver.outputs.VERSION }}" `
             --copyright "Copyright (c) 2025 1zero" `
             --distpath dist
 

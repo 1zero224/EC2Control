@@ -1,5 +1,4 @@
 <div align="center">
-
 # EC2Control
 
 <img src="assets/logo.png" alt="EC2 Control Logo" width="200"/>
@@ -33,7 +32,7 @@ A convenient tool for managing EC2 instance start/stop/restart operations
 
 ### 1. Download the Application
 
-Go to the [Releases](https://github.com/1zero224/EC2Control/releases) page and download the latest `EC2Manager.exe` file.
+Go to the [Releases](https://github.com/1zero224/EC2Control/releases) page and download the latest `EC2Control-vx.x-Windows.exe` file.
 
 ### 2. Install AWS CLI
 
@@ -102,7 +101,7 @@ Default output format [None]: json
 
 ### 5. Launch the Application
 
-Double-click `EC2Manager.exe` to start using the application.
+Double-click `EC2Control-vx.x-Windows.exe` to start using the application.
 
 
 ## Development Guide
