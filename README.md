@@ -192,8 +192,8 @@ aws_ec2_gui/
 ├── main.py                      # Launch script
 ├── requirements.txt             # Project dependencies
 ├── pyproject.toml               # Code quality configuration
-├── README.md                    # Chinese documentation
-└── README_EN.md                 # English documentation
+├── README_CN.md                 # Chinese documentation
+└── README.md                    # English documentation
 ```
 
 

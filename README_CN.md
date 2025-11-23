@@ -192,8 +192,8 @@ aws_ec2_gui/
 ├── main.py                      # 启动脚本
 ├── requirements.txt             # 项目依赖
 ├── pyproject.toml               # 代码质量配置
-├── README.md                    # 中文文档
-└── README_EN.md                 # 英文文档
+├── README_CN.md                 # 中文文档
+└── README.md                    # 英文文档
 ```
 
 
